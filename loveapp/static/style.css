@@ -226,6 +226,21 @@ body.login-page {
   background-size: 120px 120px;
 }
 
+.login-layout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.login-panel {
+  flex: 0 0 min(420px, 42vw);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
 .login-hero {
   text-align: center;
   margin-bottom: 1.75rem;
@@ -305,4 +320,21 @@ body.login-page {
   font-size: 0.8rem;
   margin-top: 0.25rem;
   font-weight: 600;
+}
+
+.login-pictures {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.login-pictures img {
+  height: 250px;
+  width: 250px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 30px rgba(94, 15, 51, 0.2);
+  border: 3px solid var(--white);
 }
