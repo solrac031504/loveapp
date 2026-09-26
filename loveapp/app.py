@@ -9,11 +9,13 @@ from flask_login import login_required
 if __package__:
     from . import models
     from .blueprints.auth import auth as auth_blueprint
+    from .blueprints.complaints import complaints as complaints_blueprint
     from .extensions import db, login_manager
     from .models import User
 else:
     import models  # noqa: F401
     from blueprints.auth import auth as auth_blueprint
+    from blueprints.complaints import complaints as complaints_blueprint
     from extensions import db, login_manager
     from models import User
 
@@ -47,6 +49,7 @@ def create_app() -> Flask:
 
     # Register blueprints
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(complaints_blueprint)
 
     @app.route("/")
     @login_required
