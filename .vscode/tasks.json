@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Activate venv",
+            "type": "shell",
+            "command": [
+                "source",
+                "${workspaceFolder}/loveapp/venv/bin/activate"
+            ],
+            "group": "none",
+            "problemMatcher": []
+        }
+    ]
+}

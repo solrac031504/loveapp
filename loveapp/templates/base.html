@@ -5,18 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}LoveApp{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-  <nav>
+<body class="{% block body_class %}{% endblock %}">
+  <header class="site-header">
+    <p class="brand"><span class="brand-heart">&#10084;</span> LoveApp</p>
+
     {% if current_user.is_authenticated %}
-      <span>Hi, {{ current_user.username }}</span>
-      <button type="button" disabled title="Coming soon">Calendar</button>
-      <button type="button" disabled title="Coming soon">Complaints</button>
-      <a href="{{ url_for('auth.logout') }}">Log out</a>
+      <nav class="nav-actions">
+        <span class="nav-greeting">Hi, {{ current_user.username }}</span>
+        <button type="button" class="btn btn-header" disabled title="Coming soon">Calendar</button>
+        <button type="button" class="btn btn-header" disabled title="Coming soon">Complaints</button>
+        <a class="btn btn-logout" href="{{ url_for('auth.logout') }}">Log out</a>
+      </nav>
     {% else %}
-      <a href="{{ url_for('auth.login') }}">Log in</a>
+      <nav class="nav-actions">
+        <a class="btn btn-header" href="{{ url_for('auth.login') }}">Log in</a>
+      </nav>
     {% endif %}
-  </nav>
+  </header>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}

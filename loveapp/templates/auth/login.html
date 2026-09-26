@@ -1,32 +1,50 @@
 {% extends "base.html" %}
 
 {% block title %}Log In - LoveApp{% endblock %}
+{% block body_class %}login-page{% endblock %}
 
 {% block content %}
-  <h1>Log In</h1>
-  <form method="POST" novalidate>
-    {{ form.hidden_tag() }}
+<div class="page">
+  <div class="login-layout">
+    <section class="login-panel">
+      <div class="login-hero">
+        <h1 class="text-outline">Welcome to LoveApp</h1>
+        <p>I'm glad you're back ❤️❤️❤️</p>
+      </div>
 
-    <p>
-      {{ form.username.label }}<br>
-      {{ form.username(size=32) }}
-      {% for error in form.username.errors %}
-        <span class="error">{{ error }}</span>
-      {% endfor %}
-    </p>
+      <div class="login-card">
+        <form method="POST" novalidate>
+          {{ form.hidden_tag() }}
 
-    <p>
-      {{ form.password.label }}<br>
-      {{ form.password(size=32) }}
-      {% for error in form.password.errors %}
-        <span class="error">{{ error }}</span>
-      {% endfor %}
-    </p>
+          <div class="field">
+            {{ form.username.label }}
+            {{ form.username(size=32) }}
+            {% for error in form.username.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+          </div>
 
-    <p>
-      {{ form.remember_me() }} {{ form.remember_me.label }}
-    </p>
+          <div class="field">
+            {{ form.password.label }}
+            {{ form.password(size=32) }}
+            {% for error in form.password.errors %}
+            <span class="error">{{ error }}</span>
+            {% endfor %}
+          </div>
 
-    <p>{{ form.submit() }}</p>
-  </form>
+          <div class="field field-checkbox">
+            {{ form.remember_me() }} {{ form.remember_me.label }}
+          </div>
+
+          {{ form.submit(class="btn btn-primary") }}
+        </form>
+      </div>
+    </section>
+
+    <section class="login-pictures" aria-label="LoveApp photo collage">
+      <img src="{{ url_for('static', filename='penguins.JPG') }}" alt="Penguins kissing" />
+      <img src="{{ url_for('static', filename='snoopy-kissing.JPG') }}" alt="Snoopy kissing" />
+    </section>
+  </div>
+</div>
 {% endblock %}
