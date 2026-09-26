@@ -91,3 +91,8 @@ class Complaint(db.Model):
     status = db.Column(db.String(50), default="open")  # open, acknowledged, resolved
     severity_level = db.Column(db.Integer)  # 1-10
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    resolved_at = db.Column(db.DateTime, nullable=True)
+
+    submitter = db.relationship(
+        "User", foreign_keys=[submitter_id], backref="complaints_filed"
+    )
