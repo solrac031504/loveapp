@@ -5,6 +5,7 @@ import click
 from dotenv import load_dotenv
 from flask import Flask, Response, render_template
 from flask_login import login_required
+from flask_migrate import Migrate
 
 if __package__:
     from . import models
@@ -46,6 +47,8 @@ def create_app() -> Flask:
 
     db.init_app(app)
     login_manager.init_app(app)
+
+    migrate = Migrate(app, db)
 
     # Register blueprints
     app.register_blueprint(auth_blueprint)
