@@ -18,7 +18,7 @@
       <nav class="nav-actions">
         <span class="nav-greeting">Hi, {{ current_user.username }}</span>
         <button type="button" class="btn btn-header" disabled title="Coming soon">Calendar</button>
-        <a class="btn btn-header" href="{{ url_for('complaints') }}">Complaints</a>
+        <a class="btn btn-header" href="{{ url_for('complaints.index') }}">Complaints</a>
         <a class="btn btn-logout" href="{{ url_for('auth.logout') }}">Log out</a>
       </nav>
     {% else %}

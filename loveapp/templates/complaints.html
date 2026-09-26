@@ -1,9 +1,87 @@
 {% extends "base.html" %}
 
-{% block title %}Complaints{% endblock %}
+{% block title %}Complaints - LoveApp{% endblock %}
 
 {% block content %}
-    <div class="page">
-        <p>Come basck later currently working on this lol</p>
+  <div class="page page-wide">
+    <h1>Complaints</h1>
+
+    <div class="tabs">
+      <input type="radio" name="complaint-tab" id="tab-open" class="tab-input" checked>
+      <input type="radio" name="complaint-tab" id="tab-history" class="tab-input">
+
+      <div class="tab-labels">
+        <label for="tab-open" class="tab-label">Open complaints</label>
+        <label for="tab-history" class="tab-label">My complaint history</label>
+      </div>
+
+      <div class="tab-panel" id="panel-open">
+        <form method="get" action="{{ url_for('complaints.index') }}" class="filter-bar">
+          <label for="status">Status</label>
+          <select name="status" id="status" onchange="this.form.submit()">
+            <option value="unresolved" {% if status_filter == "unresolved" %}selected{% endif %}>
+              Unresolved
+            </option>
+            {% for s in statuses %}
+              <option value="{{ s }}" {% if status_filter == s %}selected{% endif %}>
+                {{ s | capitalize }}
+              </option>
+            {% endfor %}
+          </select>
+          <noscript><button type="submit" class="btn btn-primary">Apply</button></noscript>
+        </form>
+
+        {% if open_complaints %}
+          <ul class="complaint-list">
+            {% for complaint in open_complaints %}
+              <li class="complaint-card">
+                <div class="complaint-card-head">
+                  <span class="complaint-title">{{ complaint.title }}</span>
+                  <span class="badge badge-status-{{ complaint.status }}">{{ complaint.status | capitalize }}</span>
+                </div>
+                <p class="complaint-body">{{ complaint.body }}</p>
+                <div class="complaint-meta">
+                  <span>From {{ complaint.submitter.username if complaint.submitter else "Unknown" }}</span>
+                  {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
+                  {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{% endif %}
+                  <span>Filed {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }}</span>
+                  {% if complaint.resolved_at %}
+                    <span>Resolved {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }}</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="empty-state">No complaints here 🎉</p>
+        {% endif %}
+      </div>
+
+      <div class="tab-panel" id="panel-history">
+        {% if my_complaint_history %}
+          <ul class="complaint-list">
+            {% for complaint in my_complaint_history %}
+              <li class="complaint-card">
+                <div class="complaint-card-head">
+                  <span class="complaint-title">{{ complaint.title }}</span>
+                  <span class="badge badge-status-{{ complaint.status }}">{{ complaint.status | capitalize }}</span>
+                </div>
+                <p class="complaint-body">{{ complaint.body }}</p>
+                <div class="complaint-meta">
+                  {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
+                  {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{% endif %}
+                  <span>Filed {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }}</span>
+                  {% if complaint.resolved_at %}
+                    <span>Resolved {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }}</span>
+                  {% endif %}
+                </div>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="empty-state">You haven't filed any complaints 😶‍🌫️</p>
+        {% endif %}
+      </div>
     </div>
+  </div>
 {% endblock %}
