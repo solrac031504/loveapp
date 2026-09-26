@@ -1,8 +1,6 @@
 from datetime import datetime, timezone
-from typing import Any
 
 from flask_login import UserMixin
-from sqlalchemy.orm.relationships import RelationshipProperty
 from werkzeug.security import check_password_hash, generate_password_hash
 
 if __package__:
@@ -94,7 +92,3 @@ class Complaint(db.Model):
     severity_level = db.Column(db.Integer)  # 1-10
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     resolved_at = db.Column(db.DateTime, nullable=True)
-
-    submitter: RelationshipProperty[Any] = db.relationship(
-        "User", foreign_keys=[submitter_id], backref="complaints_filed"
-    )
