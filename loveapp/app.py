@@ -48,7 +48,7 @@ def create_app() -> Flask:
     db.init_app(app)
     login_manager.init_app(app)
 
-    migrate = Migrate(app, db)
+    Migrate(app, db)
 
     # Register blueprints
     app.register_blueprint(auth_blueprint)
