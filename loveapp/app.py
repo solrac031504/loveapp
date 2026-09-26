@@ -57,6 +57,10 @@ def create_app() -> Flask:
     def favicon() -> Response:
         return app.send_static_file("favicon.ico")
 
+    @app.route("/complaints")
+    def complaints() -> str:
+        return render_template("complaints.html")
+
     # Create all tables on first run
     with app.app_context():
         db.create_all()
