@@ -41,5 +41,17 @@
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  <script>
+    document.querySelectorAll(".local-time").forEach((el) => {
+      const dt = new Date(el.getAttribute("datetime"))
+      if (!isNaN(dt)) {
+        el.textContent = dt.toLocaleString(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short"
+        })
+      }
+    });
+  </script>
 </body>
 </html>

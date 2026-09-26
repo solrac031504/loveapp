@@ -70,7 +70,9 @@
                 <div class="complaint-meta">
                   {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
                   {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{% endif %}
-                  <span>Filed {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }}</span>
+                  <span>Filed <time class="local-time" datetime="{{ complaint.created_at.isoformat() }}Z">
+                    {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }} UTC
+                  </time></span>
                   {% if complaint.resolved_at %}
                     <span>Resolved {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }}</span>
                   {% endif %}
