@@ -525,7 +525,7 @@ body.login-page {
   padding: 1rem;
 }
 
-.modal-toggle:checked~.modal-overlay {
+.modal-toggle:checked+.modal-overlay {
   display: flex;
 }
 
