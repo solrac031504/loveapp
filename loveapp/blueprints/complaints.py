@@ -132,7 +132,7 @@ def update_status(complaint_id: int) -> Response:
             datetime.now(timezone.utc) if new_status == "resolved" else None
         )
         db.session.commit()
-        flash(f'"{complaint.title}" marked as {new_status}.', "info")
+        flash(f'"{complaint.title}" marked as {new_status}', "info")
 
     return redirect(url_for("complaints.index"))
 
