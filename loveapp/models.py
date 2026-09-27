@@ -71,6 +71,14 @@ class EmailNotification(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notif_type = db.Column(db.String(50))  # 'event', 'complaint', 'system'
 
+    def __init__(
+        self, recipient_id: int, subject: str, message: str, notif_type: str
+    ) -> None:
+        self.recipient_id: int = recipient_id
+        self.subject: str = subject
+        self.message: str = message
+        self.notif_type: str = notif_type
+
 
 class TextNotification(db.Model):
     """Tracks notifications sent via text"""
@@ -80,6 +88,11 @@ class TextNotification(db.Model):
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notif_type = db.Column(db.String(50))  # 'event', 'complaint', 'system'
+
+    def __init__(self, recipient_id: int, message: str, notif_type: str) -> None:
+        self.recipient_id: int = recipient_id
+        self.message: str = message
+        self.notif_type: str = notif_type
 
 
 class Complaint(db.Model):

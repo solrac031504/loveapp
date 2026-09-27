@@ -8,11 +8,19 @@ from werkzeug.wrappers.response import Response
 try:
     from ..extensions import db
     from ..forms import ComplaintForm
-    from ..models import Complaint
+    from ..models import Complaint, User
+    from ..services.complaint_notifications import (
+        notify_complaint_filed,
+        notify_status_changed,
+    )
 except ImportError:
     from extensions import db
     from forms import ComplaintForm
-    from models import Complaint
+    from models import Complaint, User
+    from services.complaint_notifications import (
+        notify_complaint_filed,
+        notify_status_changed,
+    )
 
 complaints = Blueprint("complaints", __name__)
 
@@ -97,6 +105,7 @@ def new() -> Response | tuple[str, int]:
         )
         db.session.add(complaint)
         db.session.commit()
+        notify_complaint_filed(complaint)
         flash("Complaint added", "info")
         return redirect(url_for("complaints.index"))
 
@@ -127,11 +136,18 @@ def update_status(complaint_id: int) -> Response:
         return redirect(url_for("complaints.index"))
 
     if new_status != complaint.status:
+        old_status = complaint.status
         complaint.status = new_status
         complaint.resolved_at = (
             datetime.now(timezone.utc) if new_status == "resolved" else None
         )
         db.session.commit()
+
+        changed_by: User | None = User.query.filter(User.id == current_user.id).first()
+        if not changed_by:
+            raise ValueError("Changing user does not exist in the database")
+
+        notify_status_changed(complaint, old_status, new_status, changed_by=changed_by)
         flash(f'"{complaint.title}" marked as {new_status}', "info")
 
     return redirect(url_for("complaints.index"))
