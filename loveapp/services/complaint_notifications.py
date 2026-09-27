@@ -7,8 +7,6 @@ User row isn't the one in question.
 
 from __future__ import annotations
 
-from loveapp.models import User
-
 try:
     from ..models import Complaint, User
     from .notifier import notify
