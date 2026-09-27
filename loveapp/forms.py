@@ -3,7 +3,6 @@ from wtforms import (
     BooleanField,
     IntegerField,
     PasswordField,
-    SelectField,
     StringField,
     SubmitField,
     TextAreaField,
@@ -28,17 +27,8 @@ class ComplaintForm(FlaskForm):
     defaults to the current UTC time), so they aren't fields here."""
 
     title = StringField("Title", validators=[DataRequired(), Length(max=200)])
-    body = TextAreaField("What happened?", validators=[DataRequired()])
-    mood = SelectField(
-        "Mood",
-        choices=[
-            ("", "-- optional --"),
-            ("frustrated", "Frustrated"),
-            ("sad", "Sad"),
-            ("upset", "Upset"),
-        ],
-        validators=[Optional()],
-    )
+    body = TextAreaField("Description", validators=[DataRequired()])
+    mood = TextAreaField("Mood", validators=[Optional()])
     severity_level = IntegerField(
         "Severity (1-10)",
         validators=[Optional(), NumberRange(min=1, max=10)],
