@@ -2,6 +2,53 @@
 
 {% block title %}Complaints - LoveApp{% endblock %}
 
+{% macro complaint_card(complaint, statuses, show_submitter=False) %}
+<li class="complaint-card">
+    <div class="complaint-card-head">
+        <span class="complaint-title">{{ complaint.title }}</span>
+        <span class="badge badge-status-{{ complaint.status }}">{{ complaint.status | capitalize }}</span>
+    </div>
+    <p class="complaint-body">{{ complaint.body }}</p>
+    <div class="complaint-meta">
+        {% if show_submitter %}
+        <span>From {{ complaint.submitter.username if complaint.submitter else "Unknown" }}</span>
+        {% endif %}
+        {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
+        {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{% endif %}
+        <span>Filed <time class="local-time" datetime="{{ complaint.created_at.isoformat() }}Z">
+                {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }} UTC
+            </time></span>
+        {% if complaint.resolved_at %}
+        <span>Resolved <time class="local-time" datetime="{{ complaint.resolved_at.isoformat() }}Z">
+                {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }} UTC
+            </time></span>
+        {% endif %}
+    </div>
+    <div class="complaint-actions">
+        <form method="POST" action="{{ url_for('complaints.update_status', complaint_id=complaint.id) }}"
+            class="status-update-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="status-{{ complaint.id }}">Status</label>
+            <select name="status" id="status-{{ complaint.id }}" onchange="this.form.submit()">
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if complaint.status==s %}selected{% endif %}>
+                    {{ s | capitalize }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+
+        {% if complaint.submitter_id == current_user.id %}
+        <form method="POST" action="{{ url_for('complaints.delete', complaint_id=complaint.id) }}" class="delete-form"
+            onsubmit="return confirm('Delete this complaint? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-delete">Delete</button>
+        </form>
+        {% endif %}
+    </div>
+</li>
+{% endmacro %}
+
 {% block content %}
 <div class="page page-wide">
     <div class="page-header-row">
@@ -83,28 +130,7 @@
             {% if open_complaints %}
             <ul class="complaint-list">
                 {% for complaint in open_complaints %}
-                <li class="complaint-card">
-                    <div class="complaint-card-head">
-                        <span class="complaint-title">{{ complaint.title }}</span>
-                        <span class="badge badge-status-{{ complaint.status }}">{{ complaint.status | capitalize
-                            }}</span>
-                    </div>
-                    <p class="complaint-body">{{ complaint.body }}</p>
-                    <div class="complaint-meta">
-                        <span>From {{ complaint.submitter.username if complaint.submitter else "Unknown" }}</span>
-                        {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
-                        {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{%
-                        endif %}
-                        <span>Filed <time class="local-time" datetime="{{ complaint.created_at.isoformat() }}Z">
-                                {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }} UTC
-                            </time></span>
-                        {% if complaint.resolved_at %}
-                        <span>Resolved <time class="local-time" datetime="{{ complaint.resolved_at.isoformat() }}Z">
-                                {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }} UTC
-                            </time></span>
-                        {% endif %}
-                    </div>
-                </li>
+                {{ complaint_card(complaint, statuses, show_submitter=True) }}
                 {% endfor %}
             </ul>
             {% else %}
@@ -116,27 +142,7 @@
             {% if my_complaint_history %}
             <ul class="complaint-list">
                 {% for complaint in my_complaint_history %}
-                <li class="complaint-card">
-                    <div class="complaint-card-head">
-                        <span class="complaint-title">{{ complaint.title }}</span>
-                        <span class="badge badge-status-{{ complaint.status }}">{{ complaint.status | capitalize
-                            }}</span>
-                    </div>
-                    <p class="complaint-body">{{ complaint.body }}</p>
-                    <div class="complaint-meta">
-                        {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
-                        {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{%
-                        endif %}
-                        <span>Filed <time class="local-time" datetime="{{ complaint.created_at.isoformat() }}Z">
-                                {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }} UTC
-                            </time></span>
-                        {% if complaint.resolved_at %}
-                        span>Resolved <time class="local-time" datetime="{{ complaint.resolved_at.isoformat() }}Z">
-                            {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }} UTC
-                        </time></span>
-                        {% endif %}
-                    </div>
-                </li>
+                {{ complaint_card(complaint, statuses, show_submitter=False) }}
                 {% endfor %}
             </ul>
             {% else %}
