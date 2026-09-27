@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Calendar - LoveApp{% endblock %}
+
+{% macro event_form_fields(form, id_prefix) %}
+<div class="field">
+    {{ form.title.label }}
+    {{ form.title(size=40, id=id_prefix ~ "-title") }}
+    {% for error in form.title.errors %}
+    <span class="error">{{ error }}</span>
+    {% endfor %}
+</div>
+
+<div class="field">
+    {{ form.description.label }}
+    {{ form.description(rows=3, id=id_prefix ~ "-description") }}
+</div>
+
+<div class="field">
+    {{ form.event_type.label }}
+    {{ form.event_type(id=id_prefix ~ "-event-type", list="event-type-list") }}
+</div>
+
+<div class="field field-checkbox">
+    {{ form.is_all_day(id=id_prefix ~ "-is-all-day") }}
+    {{ form.is_all_day.label }}
+</div>
+
+<div class="field">
+    {{ form.start_time.label }}
+    {{ form.start_time(id=id_prefix ~ "-start") }}
+    {% for error in form.start_time.errors %}
+    <span class="error">{{ error }}</span>
+    {% endfor %}
+</div>
+
+<div class="field">
+    {{ form.end_time.label }}
+    {{ form.end_time(id=id_prefix ~ "-end") }}
+    <span class="field-hint">Leave blank for a point-in-time event. Ignored if "All day" is checked.</span>
+    {% for error in form.end_time.errors %}
+    <span class="error">{{ error }}</span>
+    {% endfor %}
+</div>
+{% endmacro %}
+
+{% macro event_pill(event) %}
+<li class="event-pill">
+    <button type="button" class="event-pill-main" onclick="openEditEventModal(this)" data-event-id="{{ event.id }}"
+        data-title="{{ event.title }}" data-description="{{ event.description or '' }}"
+        data-event-type="{{ event.event_type.event_type if event.event_type else '' }}"
+        data-is-all-day="{{ '1' if event.is_all_day else '' }}"
+        data-start="{{ event.start_time.strftime('%Y-%m-%dT%H:%M') }}"
+        data-end="{{ event.end_time.strftime('%Y-%m-%dT%H:%M') if event.end_time else '' }}">
+        <span class="event-pill-time">
+            {% if event.is_all_day %}All day{% else %}{{ event.start_time.strftime("%I:%M %p") }}{% endif %}
+        </span>
+        <span class="event-pill-title">{{ event.title }}</span>
+    </button>
+</li>
+{% endmacro %}
+
+{% block content %}
+<div class="page page-wide">
+    <div class="page-header-row">
+        <h1>Calendar</h1>
+        <label for="add-event-modal" class="btn btn-primary">Add Event</label>
+    </div>
+
+    <div class="calendar-nav">
+        <a class="btn btn-header" href="{{ url_for('calendar.index', year=prev_year, month=prev_month) }}">&larr;
+            Prev</a>
+        <div class="calendar-nav-title">
+            <span>{{ month_name }} {{ year }}</span>
+            <a class="calendar-today-link" href="{{ url_for('calendar.index') }}">Today</a>
+        </div>
+        <a class="btn btn-header" href="{{ url_for('calendar.index', year=next_year, month=next_month) }}">Next
+            &rarr;</a>
+    </div>
+
+    <datalist id="event-type-list">
+        {% for name in event_type_names %}
+        <option value="{{ name }}">
+            {% endfor %}
+    </datalist>
+
+    <!-- Add Event modal -->
+    <input type="checkbox" id="add-event-modal" class="modal-toggle" {% if open_modal %}checked{% endif %}>
+    <div class="modal-overlay">
+        <label for="add-event-modal" class="modal-backdrop" aria-hidden="true"></label>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="add-event-heading">
+            <div class="modal-card-head">
+                <h2 id="add-event-heading">Add Event</h2>
+                <label for="add-event-modal" class="modal-close" aria-label="Close">&times;</label>
+            </div>
+
+            <form method="POST" action="{{ url_for('calendar.new_event') }}" novalidate>
+                {{ form.hidden_tag() }}
+                {{ event_form_fields(form, "add") }}
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Event modal: one shared modal, populated by JS when an event pill is clicked -->
+    <input type="checkbox" id="edit-event-modal" class="modal-toggle">
+    <div class="modal-overlay">
+        <label for="edit-event-modal" class="modal-backdrop" aria-hidden="true"></label>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="edit-event-heading">
+            <div class="modal-card-head">
+                <h2 id="edit-event-heading">Edit Event</h2>
+                <label for="edit-event-modal" class="modal-close" aria-label="Close">&times;</label>
+            </div>
+
+            <form method="POST" id="edit-event-form" action="{{ url_for('calendar.edit_event', event_id=0) }}"
+                novalidate>
+                {{ form.hidden_tag() }}
+                {{ event_form_fields(form, "edit") }}
+                <div class="modal-card-actions">
+                    {{ form.submit(class="btn btn-primary", value="Save Changes") }}
+                    <button type="submit" form="edit-event-delete-form" class="btn btn-delete">Delete</button>
+                </div>
+            </form>
+            <form method="POST" id="edit-event-delete-form" action="{{ url_for('calendar.edit_event', event_id=0) }}"
+                onsubmit="return prepareDeleteForm(this);">
+                {{ form.hidden_tag() }}
+            </form>
+        </div>
+    </div>
+
+    <div class="calendar-grid">
+        <div class="calendar-weekdays">
+            {% for weekday in ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] %}
+            <div class="calendar-weekday">{{ weekday }}</div>
+            {% endfor %}
+        </div>
+
+        {% for week in weeks %}
+        <div class="calendar-week">
+            {% for day in week %}
+            <div
+                class="calendar-day {% if day.month != month %}other-month{% endif %} {% if day == today %}today{% endif %}">
+                <span class="calendar-day-number">{{ day.day }}</span>
+                {% set day_events = events_by_day.get(day, []) %}
+                {% if day_events %}
+                <ul class="calendar-day-events">
+                    {% for event in day_events %}
+                    {{ event_pill(event) }}
+                    {% endfor %}
+                </ul>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    const editUrlTemplate = "{{ url_for('calendar.edit_event', event_id=0) }}";
+    const deleteUrlTemplate = "{{ url_for('calendar.delete_event', event_id=0) }}";
+
+    function openEditEventModal(button) {
+        const id = button.dataset.eventId;
+
+        document.getElementById("edit-event-form").action = editUrlTemplate.replace("/0/", "/" + id + "/");
+        document.getElementById("edit-event-delete-form").action = deleteUrlTemplate.replace("/0/", "/" + id + "/");
+
+        document.getElementById("edit-title").value = button.dataset.title || "";
+        document.getElementById("edit-description").value = button.dataset.description || "";
+        document.getElementById("edit-event-type").value = button.dataset.eventType || "";
+        document.getElementById("edit-is-all-day").checked = button.dataset.isAllDay === "1";
+        document.getElementById("edit-start").value = button.dataset.start || "";
+        document.getElementById("edit-end").value = button.dataset.end || "";
+
+        document.getElementById("edit-event-modal").checked = true;
+    }
+
+    function prepareDeleteForm(deleteForm) {
+        return confirm("Delete this event? This cannot be undone.");
+    }
+</script>
+{% endblock %}
