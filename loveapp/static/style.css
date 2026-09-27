@@ -576,7 +576,8 @@ body.login-page {
 .modal-card form .field input[type="text"],
 .modal-card form .field textarea,
 .modal-card form .field select,
-.modal-card form .field input[type="number"] {
+.modal-card form .field input[type="number"],
+.modal-card form .field input[type="datetime-local"] {
   width: 100%;
   padding: 0.6rem 0.8rem;
   border-radius: 10px;
@@ -651,4 +652,163 @@ body.login-page {
 
 .btn-delete:hover {
   background: #ffe0e0;
+}
+
+/* ---------- Calendar page ---------- */
+
+.field-hint {
+  display: block;
+  font-size: 0.78rem;
+  opacity: 0.65;
+  margin-top: 0.25rem;
+}
+
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.calendar-nav-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 1.15rem;
+}
+
+.calendar-today-link {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--pink-primary-dark);
+  text-decoration: none;
+}
+
+.calendar-today-link:hover {
+  text-decoration: underline;
+}
+
+.calendar-grid {
+  border: 1px solid rgba(225, 29, 72, 0.15);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--pink-card);
+}
+
+.calendar-weekdays,
+.calendar-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.calendar-weekday {
+  padding: 0.5rem 0.4rem;
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--pink-primary-dark);
+  background: var(--pink-bg-deep);
+}
+
+.calendar-day {
+  min-height: 92px;
+  padding: 0.4rem;
+  border-top: 1px solid rgba(225, 29, 72, 0.12);
+  border-left: 1px solid rgba(225, 29, 72, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.calendar-week .calendar-day:first-child {
+  border-left: none;
+}
+
+.calendar-day-number {
+  font-size: 0.82rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.calendar-day.other-month {
+  background: rgba(255, 255, 255, 0.4);
+}
+
+.calendar-day.other-month .calendar-day-number {
+  opacity: 0.35;
+}
+
+.calendar-day.today .calendar-day-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.3rem;
+  border-radius: var(--radius-pill);
+  background: var(--pink-primary);
+  color: var(--white);
+  opacity: 1;
+}
+
+.calendar-day-events {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.event-pill {
+  width: 100%;
+}
+
+.event-pill-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.05rem;
+  padding: 0.2rem 0.4rem;
+  border: none;
+  border-radius: 8px;
+  background: var(--pink-bg-deep);
+  color: var(--plum-text);
+  font-family: var(--font-body);
+  cursor: pointer;
+  text-align: left;
+}
+
+.event-pill-main:hover {
+  background: var(--pink-primary);
+  color: var(--white);
+}
+
+.event-pill-time {
+  font-size: 0.68rem;
+  font-weight: 700;
+  opacity: 0.8;
+}
+
+.event-pill-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.modal-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }

@@ -46,6 +46,9 @@ class CalendarEventType(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     event_type = db.Column(db.String(100))
 
+    def __init__(self, event_type: str) -> None:
+        self.event_type: Any = event_type
+
 
 class CalendarEvent(db.Model):
     """Represents a calendar event"""
@@ -59,6 +62,28 @@ class CalendarEvent(db.Model):
     end_time = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"))
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+
+    event_type: Mapped["CalendarEventType"] = relationship(
+        "CalendarEventType", foreign_keys=[event_type_id]
+    )
+
+    def __init__(
+        self,
+        title: str,
+        description: str | None,
+        event_type_id: int | None,
+        is_all_day: bool,
+        start_time: datetime,
+        end_time: datetime | None,
+        created_by: int | None,
+    ) -> None:
+        self.title: Any = title
+        self.description: Any = description
+        self.event_type_id: Any = event_type_id
+        self.is_all_day: Any = is_all_day
+        self.start_time: Any = start_time
+        self.end_time: Any = end_time
+        self.created_by: Any = created_by
 
 
 class EmailNotification(db.Model):

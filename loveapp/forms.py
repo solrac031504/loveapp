@@ -1,13 +1,20 @@
 from flask_wtf import FlaskForm
 from wtforms import (
     BooleanField,
+    DateTimeLocalField,
     IntegerField,
     PasswordField,
     StringField,
     SubmitField,
     TextAreaField,
 )
-from wtforms.validators import DataRequired, Length, NumberRange, Optional
+from wtforms.validators import (
+    DataRequired,
+    Length,
+    NumberRange,
+    Optional,
+    ValidationError,
+)
 
 
 class LoginForm(FlaskForm):
@@ -34,3 +41,29 @@ class ComplaintForm(FlaskForm):
         validators=[Optional(), NumberRange(min=1, max=10)],
     )
     submit = SubmitField("Add Complaint")
+
+
+class CalendarEventForm(FlaskForm):
+    """Form for creating and editing a calendar event.
+
+    `event_type` is a free-text field rather than a select: the couple can
+    invent new event types on the fly, and the blueprint looks up (or
+    creates) the matching `CalendarEventType` row by name. Leaving it
+    blank is fine -- the event just won't have a type.
+    """
+
+    title = StringField("Title", validators=[DataRequired(), Length(max=200)])
+    description = TextAreaField("Description", validators=[Optional()])
+    event_type = StringField("Event type", validators=[Optional(), Length(max=100)])
+    is_all_day = BooleanField("All day")
+    start_time = DateTimeLocalField(
+        "Start", format="%Y-%m-%dT%H:%M", validators=[DataRequired()]
+    )
+    end_time = DateTimeLocalField(
+        "End", format="%Y-%m-%dT%H:%M", validators=[Optional()]
+    )
+    submit = SubmitField("Save Event")
+
+    def validate_end_time(self, field: DateTimeLocalField) -> None:
+        if field.data and self.start_time.data and field.data < self.start_time.data:
+            raise ValidationError("End time must be after the start time.")

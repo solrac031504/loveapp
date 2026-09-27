@@ -10,12 +10,14 @@ from flask_migrate import Migrate
 if __package__:
     from . import models
     from .blueprints.auth import auth as auth_blueprint
+    from .blueprints.calendar import calendar as calendar_blueprint
     from .blueprints.complaints import complaints as complaints_blueprint
     from .extensions import csrf, db, login_manager
     from .models import User
 else:
     import models  # noqa: F401
     from blueprints.auth import auth as auth_blueprint
+    from blueprints.calendar import calendar as calendar_blueprint
     from blueprints.complaints import complaints as complaints_blueprint
     from extensions import csrf, db, login_manager
     from models import User
@@ -53,6 +55,7 @@ def create_app() -> Flask:
 
     # Register blueprints
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(calendar_blueprint)
     app.register_blueprint(complaints_blueprint)
 
     @app.route("/")

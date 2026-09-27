@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -10,33 +11,34 @@
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
     <p class="brand"><span class="brand-heart">&#10084;</span> LoveApp</p>
 
     {% if current_user.is_authenticated %}
-      <nav class="nav-actions">
-        <span class="nav-greeting">Hi, {{ current_user.username }}</span>
-        <a class="btn btn-header" href="{{ url_for('home') }}">Home</a>
-        <button type="button" class="btn btn-header" disabled title="Coming soon">Calendar</button>
-        <a class="btn btn-header" href="{{ url_for('complaints.index') }}">Complaints</a>
-        <a class="btn btn-logout" href="{{ url_for('auth.logout') }}">Log out</a>
-      </nav>
+    <nav class="nav-actions">
+      <span class="nav-greeting">Hi, {{ current_user.username }}</span>
+      <a class="btn btn-header" href="{{ url_for('home') }}">Home</a>
+      <a class="btn btn-header" href="{{ url_for('calendar.index') }}">Calendar</a>
+      <a class="btn btn-header" href="{{ url_for('complaints.index') }}">Complaints</a>
+      <a class="btn btn-logout" href="{{ url_for('auth.logout') }}">Log out</a>
+    </nav>
     {% else %}
-      <nav class="nav-actions">
-        <a class="btn btn-header" href="{{ url_for('auth.login') }}">Log in</a>
-      </nav>
+    <nav class="nav-actions">
+      <a class="btn btn-header" href="{{ url_for('auth.login') }}">Log in</a>
+    </nav>
     {% endif %}
   </header>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-      <ul class="flashes">
-        {% for category, message in messages %}
-          <li class="flash-{{ category }}">{{ message }}</li>
-        {% endfor %}
-      </ul>
-    {% endif %}
+  {% if messages %}
+  <ul class="flashes">
+    {% for category, message in messages %}
+    <li class="flash-{{ category }}">{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
   {% endwith %}
 
   <main>
@@ -55,4 +57,5 @@
     });
   </script>
 </body>
+
 </html>
