@@ -1,7 +1,8 @@
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from datetime import datetime, timezone
+
+from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_sqlalchemy.query import Query
-from models import Complaint
 from werkzeug.wrappers.response import Response
 
 try:
@@ -109,3 +110,46 @@ def new() -> Response | tuple[str, int]:
     context["form"] = form
     context["open_modal"] = True
     return render_template("complaints.html", **context), 400
+
+
+@complaints.route("/complaints/<int:complaint_id>/status", methods=["POST"])
+@login_required
+def update_status(complaint_id: int) -> Response:
+    """Update a complaint's status. Both users can update the status of
+    ANY complaint, including their own -- there's no ownership check here.
+    Only deletion (below) is restricted to the original submitter."""
+
+    complaint = Complaint.query.get_or_404(complaint_id)
+
+    new_status: str = request.form.get("status", "").strip().lower()
+    if new_status not in STATUSES:
+        flash("Invalid status", "danger")
+        return redirect(url_for("complaints.index"))
+
+    if new_status != complaint.status:
+        complaint.status = new_status
+        complaint.resolved_at = (
+            datetime.now(timezone.utc) if new_status == "resolved" else None
+        )
+        db.session.commit()
+        flash(f'"{complaint.title}" marked as {new_status}.', "info")
+
+    return redirect(url_for("complaints.index"))
+
+
+@complaints.route("/complaints/<int:complaint_id>/delete", methods=["POST"])
+@login_required
+def delete(complaint_id: int) -> Response:
+    """Hard-delete a complaint. Unlike status updates, this is restricted
+    to the user who originally filed the complaint."""
+
+    complaint = Complaint.query.get_or_404(complaint_id)
+
+    if complaint.submitter_id != current_user.id:
+        abort(403)
+
+    db.session.delete(complaint)
+    db.session.commit()
+
+    flash("Complaint deleted", "info")
+    return redirect(url_for("complaints.index"))
