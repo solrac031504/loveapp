@@ -11,13 +11,13 @@ if __package__:
     from . import models
     from .blueprints.auth import auth as auth_blueprint
     from .blueprints.complaints import complaints as complaints_blueprint
-    from .extensions import db, login_manager
+    from .extensions import csrf, db, login_manager
     from .models import User
 else:
     import models  # noqa: F401
     from blueprints.auth import auth as auth_blueprint
     from blueprints.complaints import complaints as complaints_blueprint
-    from extensions import db, login_manager
+    from extensions import csrf, db, login_manager
     from models import User
 
 
@@ -47,6 +47,7 @@ def create_app() -> Flask:
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
 
     Migrate(app, db)
 
