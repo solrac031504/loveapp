@@ -1,10 +1,15 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_sqlalchemy.query import Query
+from werkzeug.wrappers.response import Response
 
 try:
+    from ..extensions import db
+    from ..forms import ComplaintForm
     from ..models import Complaint
 except ImportError:
+    from extensions import db
+    from forms import ComplaintForm
     from models import Complaint
 
 complaints = Blueprint("complaints", __name__)
@@ -17,10 +22,8 @@ STATUSES = ("open", "acknowledged", "resolved")
 DEFAULT_STATUS_FILTER = "unresolved"
 
 
-@complaints.route("/complaints")
-@login_required
-def index() -> str:
-    """Complaints page with two tabs:
+def _complaints_context(status_filter: str) -> dict:
+    """Shared query logic for the complaints page.
 
     - "Open complaints": complaints filed against the current user, i.e.
       filed by the other person. LoveApp is built for a single couple (see
@@ -30,10 +33,6 @@ def index() -> str:
     - "My complaint history": every complaint the current user has filed
       themselves, regardless of status, sorted newest first.
     """
-
-    status_filter: str = (
-        request.args.get("status", DEFAULT_STATUS_FILTER).strip().lower()
-    )
     if status_filter != DEFAULT_STATUS_FILTER and status_filter not in STATUSES:
         status_filter = DEFAULT_STATUS_FILTER
 
@@ -57,10 +56,54 @@ def index() -> str:
         .all()
     )
 
-    return render_template(
-        "complaints.html",
-        open_complaints=open_complaints,
-        my_complaint_history=my_complaint_history,
-        status_filter=status_filter,
-        statuses=STATUSES,
+    return {
+        "open_complaints": open_complaints,
+        "my_complaint_history": my_complaint_history,
+        "status_filter": status_filter,
+        "statuses": STATUSES,
+    }
+
+
+@complaints.route("/complaints")
+@login_required
+def index() -> str:
+    status_filter: str = (
+        request.args.get("status", DEFAULT_STATUS_FILTER).strip().lower()
     )
+    context = _complaints_context(status_filter)
+    context["form"] = ComplaintForm()
+    return render_template("complaints.html", **context)
+
+
+@complaints.route("/complaints/new", methods=["POST"])
+@login_required
+def new() -> Response | tuple[str, int]:
+    """Create a new complaint filed by the current user. Status is always
+    "open" and created_at is left to the model default (current UTC time
+    at insert), regardless of what the client sends."""
+
+    form = ComplaintForm()
+    if form.validate_on_submit():
+        complaint = Complaint(
+            submitter_id=current_user.id,
+            title=form.title.data,
+            body=form.body.data,
+            mood=form.mood.data or None,
+            severity_level=form.severity_level.data,
+            status="open",
+        )
+        db.session.add(complaint)
+        db.session.commit()
+        flash("Complaint added -- see it under 'My complaint history'.", "info")
+        return redirect(url_for("complaints.index"))
+
+    # Validation failed: re-render the page with the entered data and
+    # errors preserved, and the modal reopened, instead of silently
+    # discarding what the user typed via a redirect.
+    status_filter: str = (
+        request.args.get("status", DEFAULT_STATUS_FILTER).strip().lower()
+    )
+    context = _complaints_context(status_filter)
+    context["form"] = form
+    context["open_modal"] = True
+    return render_template("complaints.html", **context), 400
