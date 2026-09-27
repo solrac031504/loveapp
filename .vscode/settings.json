@@ -11,7 +11,7 @@
         "editor.wordBasedSuggestions": "off",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
-            "source.addTypeAnnotation": "always",
+            "source.addTypeAnnotation": "never",
             "source.unusedImports": "always"
         }
     },

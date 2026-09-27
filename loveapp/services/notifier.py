@@ -59,7 +59,6 @@ def _send_email(user: User, subject: str, message: str, notif_type: str) -> None
         )
         return
 
-    ex: Exception
     try:
         _deliver_email(user.email, subject, message)
     except Exception as ex:  # noqa: BLE001 -- delivery failures must not bubble up
