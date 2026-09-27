@@ -17,8 +17,9 @@
     {% if current_user.is_authenticated %}
       <nav class="nav-actions">
         <span class="nav-greeting">Hi, {{ current_user.username }}</span>
+        <a class="btn btn-header" href="{{ url_for('home') }}">Home</a>
         <button type="button" class="btn btn-header" disabled title="Coming soon">Calendar</button>
-        <button type="button" class="btn btn-header" disabled title="Coming soon">Complaints</button>
+        <a class="btn btn-header" href="{{ url_for('complaints.index') }}">Complaints</a>
         <a class="btn btn-logout" href="{{ url_for('auth.logout') }}">Log out</a>
       </nav>
     {% else %}
@@ -41,5 +42,17 @@
   <main>
     {% block content %}{% endblock %}
   </main>
+
+  <script>
+    document.querySelectorAll(".local-time").forEach((el) => {
+      const dt = new Date(el.getAttribute("datetime"))
+      if (!isNaN(dt)) {
+        el.textContent = dt.toLocaleString(undefined, {
+          dateStyle: "medium",
+          timeStyle: "short"
+        })
+      }
+    });
+  </script>
 </body>
 </html>

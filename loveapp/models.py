@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
+from typing import Any
 
 from flask_login import UserMixin
+from sqlalchemy.orm import Mapped, relationship
 from werkzeug.security import check_password_hash, generate_password_hash
 
 if __package__:
@@ -56,7 +58,7 @@ class CalendarEvent(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime)
     created_by = db.Column(db.Integer, db.ForeignKey("user.id"))
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 
 class EmailNotification(db.Model):
@@ -66,7 +68,7 @@ class EmailNotification(db.Model):
     recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     subject = db.Column(db.String(100), nullable=False)
     message = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notif_type = db.Column(db.String(50))  # 'event', 'complaint', 'system'
 
 
@@ -76,7 +78,7 @@ class TextNotification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     recipient_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     message = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notif_type = db.Column(db.String(50))  # 'event', 'complaint', 'system'
 
 
@@ -90,4 +92,25 @@ class Complaint(db.Model):
     mood = db.Column(db.String(50))  # 'frustrated', 'sad', 'upset'
     status = db.Column(db.String(50), default="open")  # open, acknowledged, resolved
     severity_level = db.Column(db.Integer)  # 1-10
-    created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    resolved_at = db.Column(db.DateTime, nullable=True)
+
+    submitter: Mapped["User"] = relationship(
+        "User", foreign_keys=[submitter_id], backref="complaints_filed"
+    )
+
+    def __init__(
+        self,
+        submitter_id: int,
+        title: str,
+        body: str,
+        mood: str | None,
+        severity_level: int,
+        status: str,
+    ) -> None:
+        self.submitter_id: Any = submitter_id
+        self.title: Any = title
+        self.body: Any = body
+        self.mood: Any = mood
+        self.severity_level: Any = severity_level
+        self.status: Any = status

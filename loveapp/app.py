@@ -5,16 +5,19 @@ import click
 from dotenv import load_dotenv
 from flask import Flask, Response, render_template
 from flask_login import login_required
+from flask_migrate import Migrate
 
 if __package__:
     from . import models
     from .blueprints.auth import auth as auth_blueprint
-    from .extensions import db, login_manager
+    from .blueprints.complaints import complaints as complaints_blueprint
+    from .extensions import csrf, db, login_manager
     from .models import User
 else:
     import models  # noqa: F401
     from blueprints.auth import auth as auth_blueprint
-    from extensions import db, login_manager
+    from blueprints.complaints import complaints as complaints_blueprint
+    from extensions import csrf, db, login_manager
     from models import User
 
 
@@ -44,9 +47,13 @@ def create_app() -> Flask:
 
     db.init_app(app)
     login_manager.init_app(app)
+    csrf.init_app(app)
+
+    Migrate(app, db)
 
     # Register blueprints
     app.register_blueprint(auth_blueprint)
+    app.register_blueprint(complaints_blueprint)
 
     @app.route("/")
     @login_required

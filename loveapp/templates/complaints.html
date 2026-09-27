@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Complaints - LoveApp{% endblock %}
+
+{% macro complaint_card(complaint, statuses, show_submitter=False) %}
+<li class="complaint-card">
+    <div class="complaint-card-head">
+        <span class="complaint-title">{{ complaint.title }}</span>
+        <span class="badge badge-status-{{ complaint.status }}">{{ complaint.status | capitalize }}</span>
+    </div>
+    <p class="complaint-body">{{ complaint.body }}</p>
+    <div class="complaint-meta">
+        {% if show_submitter %}
+        <span>From {{ complaint.submitter.username if complaint.submitter else "Unknown" }}</span>
+        {% endif %}
+        {% if complaint.mood %}<span>Mood: {{ complaint.mood | capitalize }}</span>{% endif %}
+        {% if complaint.severity_level %}<span>Severity: {{ complaint.severity_level }}/10</span>{% endif %}
+        <span>Filed <time class="local-time" datetime="{{ complaint.created_at.isoformat() }}Z">
+                {{ complaint.created_at.strftime("%b %d, %Y %I:%M %p") }} UTC
+            </time></span>
+        {% if complaint.resolved_at %}
+        <span>Resolved <time class="local-time" datetime="{{ complaint.resolved_at.isoformat() }}Z">
+                {{ complaint.resolved_at.strftime("%b %d, %Y %I:%M %p") }} UTC
+            </time></span>
+        {% endif %}
+    </div>
+    <div class="complaint-actions">
+        <form method="POST" action="{{ url_for('complaints.update_status', complaint_id=complaint.id) }}"
+            class="status-update-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <label for="status-{{ complaint.id }}">Status</label>
+            <select name="status" id="status-{{ complaint.id }}" onchange="this.form.submit()">
+                {% for s in statuses %}
+                <option value="{{ s }}" {% if complaint.status==s %}selected{% endif %}>
+                    {{ s | capitalize }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+
+        {% if complaint.submitter_id == current_user.id %}
+        <form method="POST" action="{{ url_for('complaints.delete', complaint_id=complaint.id) }}" class="delete-form"
+            onsubmit="return confirm('Delete this complaint? This cannot be undone.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-delete">Delete</button>
+        </form>
+        {% endif %}
+    </div>
+</li>
+{% endmacro %}
+
+{% block content %}
+<div class="page page-wide">
+    <div class="page-header-row">
+        <h1>Complaints</h1>
+        <label for="add-complaint-modal" class="btn btn-primary">Add Complaint</label>
+    </div>
+
+    <input type="checkbox" id="add-complaint-modal" class="modal-toggle" {% if open_modal %}checked{% endif %}>
+    <div class="modal-overlay">
+        <label for="add-complaint-modal" class="modal-backdrop" aria-hidden="true"></label>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="add-complaint-heading">
+            <div class="modal-card-head">
+                <h2 id="add-complaint-heading">Add Complaint</h2>
+                <label for="add-complaint-modal" class="modal-close" aria-label="Close">&times;</label>
+            </div>
+
+            <form method="POST" action="{{ url_for('complaints.new') }}" novalidate>
+                {{ form.hidden_tag() }}
+
+                <div class="field">
+                    {{ form.title.label }}
+                    {{ form.title(size=40) }}
+                    {% for error in form.title.errors %}
+                    <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field">
+                    {{ form.body.label }}
+                    {{ form.body(rows=4) }}
+                    {% for error in form.body.errors %}
+                    <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="field">
+                    {{ form.mood.label }}
+                    {{ form.mood() }}
+                </div>
+
+                <div class="field">
+                    {{ form.severity_level.label }}
+                    {{ form.severity_level() }}
+                    {% for error in form.severity_level.errors %}
+                    <span class="error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {{ form.submit(class="btn btn-primary") }}
+            </form>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <input type="radio" name="complaint-tab" id="tab-open" class="tab-input" checked>
+        <input type="radio" name="complaint-tab" id="tab-history" class="tab-input">
+
+        <div class="tab-labels">
+            <label for="tab-open" class="tab-label">Open complaints</label>
+            <label for="tab-history" class="tab-label">My complaint history</label>
+        </div>
+
+        <div class="tab-panel" id="panel-open">
+            <form method="get" action="{{ url_for('complaints.index') }}" class="filter-bar">
+                <label for="status">Status</label>
+                <select name="status" id="status" onchange="this.form.submit()">
+                    <option value="unresolved" {% if status_filter=="unresolved" %}selected{% endif %}>
+                        Unresolved
+                    </option>
+                    {% for s in statuses %}
+                    <option value="{{ s }}" {% if status_filter==s %}selected{% endif %}>
+                        {{ s | capitalize }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <noscript><button type="submit" class="btn btn-primary">Apply</button></noscript>
+            </form>
+
+            {% if open_complaints %}
+            <ul class="complaint-list">
+                {% for complaint in open_complaints %}
+                {{ complaint_card(complaint, statuses, show_submitter=True) }}
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-state">No complaints here 🎉</p>
+            {% endif %}
+        </div>
+
+        <div class="tab-panel" id="panel-history">
+            {% if my_complaint_history %}
+            <ul class="complaint-list">
+                {% for complaint in my_complaint_history %}
+                {{ complaint_card(complaint, statuses, show_submitter=False) }}
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="empty-state">You haven't filed any complaints 😶‍🌫️</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
