@@ -1,6 +1,7 @@
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_sqlalchemy.query import Query
+from models import Complaint
 from werkzeug.wrappers.response import Response
 
 try:
@@ -84,17 +85,18 @@ def new() -> Response | tuple[str, int]:
 
     form = ComplaintForm()
     if form.validate_on_submit():
+        # Added coalesces to appease compiler
         complaint = Complaint(
             submitter_id=current_user.id,
-            title=form.title.data,
-            body=form.body.data,
+            title=form.title.data or "",
+            body=form.body.data or "",
             mood=form.mood.data or None,
-            severity_level=form.severity_level.data,
+            severity_level=form.severity_level.data or 1,
             status="open",
         )
         db.session.add(complaint)
         db.session.commit()
-        flash("Complaint added -- see it under 'My complaint history'.", "info")
+        flash("Complaint added", "info")
         return redirect(url_for("complaints.index"))
 
     # Validation failed: re-render the page with the entered data and

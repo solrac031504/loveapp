@@ -99,7 +99,15 @@ class Complaint(db.Model):
         "User", foreign_keys=[submitter_id], backref="complaints_filed"
     )
 
-    def __init__(self, submitter_id, title, body, mood, severity_level, status) -> None:
+    def __init__(
+        self,
+        submitter_id: int,
+        title: str,
+        body: str,
+        mood: str | None,
+        severity_level: int,
+        status: str,
+    ) -> None:
         self.submitter_id: Any = submitter_id
         self.title: Any = title
         self.body: Any = body
