@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import calendar as calendar_module
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
@@ -112,7 +112,7 @@ def _calendar_context(year: int, month: int) -> dict:
         "year": year,
         "month": month,
         "month_name": MONTH_NAMES[month - 1],
-        "today": date.today(),
+        "today": datetime.now(tz=timezone.utc),
         "prev_year": prev_year,
         "prev_month": prev_month,
         "next_year": next_year,
@@ -133,7 +133,7 @@ def _acting_user() -> User:
 
 
 def _get_year_month_args() -> tuple[int, int]:
-    today: date = date.today()
+    today: date = datetime.now(tz=timezone.utc)
     year: int = request.args.get("year", today.year, type=int) or today.year
     month: int = request.args.get("month", today.month, type=int) or today.month
     return year, month
@@ -181,7 +181,7 @@ def new_event() -> tuple[str, int] | Response:
     # Validation failed: re-render the month the user was adding an event
     # to, with the entered data and errors preserved and the modal
     # reopened, instead of silently discarding what they typed.
-    fallback: date = form.start_time.data or date.today()
+    fallback: date = form.start_time.data or datetime.now(tz=timezone.utc)
     context = _calendar_context(fallback.year, fallback.month)
     context["form"] = form
     context["open_modal"] = True
