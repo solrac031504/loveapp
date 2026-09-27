@@ -602,3 +602,53 @@ body.login-page {
   width: auto;
   margin-top: 0.25rem;
 }
+
+/* ---------- Complaint status/delete controls ---------- */
+
+.complaint-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(225, 29, 72, 0.15);
+}
+
+.status-update-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-update-form label {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.status-update-form select {
+  padding: 0.35rem 0.6rem;
+  border-radius: 8px;
+  border: 2px solid var(--pink-bg-deep);
+  background: var(--white);
+  font-family: var(--font-body);
+  font-size: 0.85rem;
+  color: var(--plum-text);
+}
+
+.status-update-form select:focus {
+  outline: none;
+  border-color: var(--pink-primary);
+}
+
+.btn-delete {
+  background: transparent;
+  color: var(--danger);
+  border-color: var(--danger);
+  font-size: 0.82rem;
+  padding: 0.35rem 0.8rem;
+}
+
+.btn-delete:hover {
+  background: #ffe0e0;
+}
