@@ -1,0 +1,25 @@
+[Unit]
+Description=LoveApp (Gunicorn)
+After=network.target
+
+[Service]
+User=deploy
+Group=deploy
+WorkingDirectory=/srv/loveapp/app
+EnvironmentFile=/srv/loveapp/.env
+
+# One worker keeps SQLite simple; threads are plenty for two users.
+ExecStart=/srv/loveapp/venv/bin/gunicorn \
+    --workers 1 \
+    --threads 4 \
+    --bind 127.0.0.1:8000 \
+    --access-logfile - \
+    "loveapp.app:create_app()"
+
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
