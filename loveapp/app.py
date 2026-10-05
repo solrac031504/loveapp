@@ -75,6 +75,7 @@ def create_app() -> Flask:
         db.create_all()
 
     register_cli(app)
+    password_change_cli(app)
 
     return app
 
@@ -102,6 +103,25 @@ def register_cli(app: Flask) -> None:
         db.session.add(user)
         db.session.commit()
         click.echo(f"Created user '{username}' (id={user.id}).")
+
+
+def password_change_cli(app: Flask) -> None:
+    """CLI commands for updating a user's password in case password is forgotten"""
+
+    @app.cli.command("reset-password")
+    @click.argument("username")
+    @click.password_option()
+    def reset_password(username: str, password: str) -> None:
+        """Update a password"""
+        user: User | None = User.query.filter_by(username=username).first()
+
+        if not user:
+            click.echo(f"Error: user '{username}' does not exist")
+            return
+
+        user.set_password(password)
+        db.session.commit()
+        click.echo(f"Updated '{username}' password")
 
 
 if __name__ == "__main__":
