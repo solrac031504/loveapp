@@ -69,7 +69,7 @@ def index() -> Response | str:
 
     if submitted(PASSWORD_PREFIX) and password_form.validate():
         if not current_user.check_password(password_form.current_password.data):
-            password_form.current_password.errors.append(
+            password_form.current_password.errors.append(  # type: ignore
                 "Current password is incorrect."
             )
         else:
