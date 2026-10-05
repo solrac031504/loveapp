@@ -195,6 +195,12 @@ a {
   border: 1px solid #ffb3b3;
 }
 
+.flash-success {
+  background: #dcfce7;
+  color: #15803d;
+  border: 1px solid #a7e3bd;
+}
+
 .flash-info {
   background: #e3edff;
   color: var(--info);
@@ -285,6 +291,8 @@ body.login-page {
 }
 
 .field input[type="text"],
+.field input[type="email"],
+.field input[type="tel"],
 .field input[type="password"] {
   width: 100%;
   padding: 0.6rem 0.8rem;
@@ -821,4 +829,29 @@ body.login-page {
 
 .btn-header:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.199);
+}
+
+/* ---------- Settings page ---------- */
+
+.settings-card {
+  background: var(--pink-card);
+  border: 1px solid rgba(225, 29, 72, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.settings-card h2 {
+  font-size: 1.2rem;
+}
+
+.settings-help {
+  margin: -0.25rem 0 1rem;
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.settings-card .btn-primary {
+  width: auto;
+  margin-top: 0.25rem;
 }

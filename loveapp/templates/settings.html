@@ -1,5 +1,85 @@
 {% extends "base.html" %}
 
+{% block title %}Settings - LoveApp{% endblock %}
+
 {% block content %}
-<p>Here go the account preferences in a bit.</p>
+<div class="page page-wide">
+    <h1>Settings</h1>
+
+    <section class="settings-card">
+        <h2>Notifications</h2>
+        <p class="settings-help">Choose how you'd like to hear from LoveApp.</p>
+        <form method="POST" action="{{ url_for('settings.index') }}" novalidate>
+            {{ prefs_form.hidden_tag() }}
+
+            <div class="field field-checkbox">
+                {{ prefs_form.send_email() }} {{ prefs_form.send_email.label }}
+            </div>
+
+            <div class="field field-checkbox">
+                {{ prefs_form.send_message() }} {{ prefs_form.send_message.label }}
+            </div>
+
+            {{ prefs_form.submit(class="btn btn-primary") }}
+        </form>
+    </section>
+
+    <section class="settings-card">
+        <h2>Contact info</h2>
+        <form method="POST" action="{{ url_for('settings.index') }}" novalidate>
+            {{ contact_form.hidden_tag() }}
+
+            <div class="field">
+                {{ contact_form.email.label }}
+                {{ contact_form.email(autocomplete="email") }}
+                {% for error in contact_form.email.errors %}
+                <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="field">
+                {{ contact_form.phone.label }}
+                {{ contact_form.phone(autocomplete="tel") }}
+                {% for error in contact_form.phone.errors %}
+                <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {{ contact_form.submit(class="btn btn-primary") }}
+        </form>
+    </section>
+
+    <section class="settings-card">
+        <h2>Change password</h2>
+        <form method="POST" action="{{ url_for('settings.index') }}" novalidate>
+            {{ password_form.hidden_tag() }}
+
+            <div class="field">
+                {{ password_form.current_password.label }}
+                {{ password_form.current_password(autocomplete="current-password") }}
+                {% for error in password_form.current_password.errors %}
+                <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="field">
+                {{ password_form.new_password.label }}
+                {{ password_form.new_password(autocomplete="new-password") }}
+                {% for error in password_form.new_password.errors %}
+                <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="field">
+                {{ password_form.confirm_password.label }}
+                {{ password_form.confirm_password(autocomplete="new-password") }}
+                {% for error in password_form.confirm_password.errors %}
+                <span class="error">{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {{ password_form.submit(class="btn btn-primary") }}
+        </form>
+    </section>
+</div>
 {% endblock %}
