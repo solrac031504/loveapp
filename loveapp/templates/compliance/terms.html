@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Terms and Conditions | Carlos Gonzalez</title>
+    <style>
+        :root {
+            --bg: #fff;
+            --fg: #1d2433;
+            --mut: #5b6475;
+            --line: #d9dde5;
+            --link: #1a56b0
+        }
+
+        @media(prefers-color-scheme:dark) {
+            :root {
+                --bg: #14171d;
+                --fg: #e6e9ef;
+                --mut: #9aa3b2;
+                --line: #2c323d;
+                --link: #7fb0ff
+            }
+        }
+
+        html {
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0)
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font: 17px/1.65 Georgia, "Times New Roman", serif
+        }
+
+        main {
+            max-width: 42rem;
+            margin: 0 auto;
+            padding: 2.5rem 1.25rem 4rem
+        }
+
+        h1 {
+            font-size: 2rem;
+            line-height: 1.2;
+            margin: 0 0 .25rem
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin: 2.2rem 0 .5rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--line)
+        }
+
+        p,
+        li {
+            margin: .5rem 0
+        }
+
+        .meta {
+            color: var(--mut);
+            margin: 0 0 1.5rem
+        }
+
+        a {
+            color: var(--link)
+        }
+
+        nav {
+            margin-top: 2.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--line);
+            color: var(--mut)
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Terms and Conditions</h1>
+        <p class="meta">Carlos Gonzalez &middot; Last updated: October 9, 2026</p>
+
+        <p>These terms apply to your use of Carlos Gonzalez's website and services and to our text messaging program. By
+            using our services or opting in to text messages, you agree to them.</p>
+
+        <h2>Text messaging program</h2>
+        <p><strong>Program name:</strong> LoveApp</p>
+        <p><strong>Description:</strong> Carlos Gonzalez sends text messages to people who have opted in, such as
+            calendar notifications and complaint notifications.</p>
+        <p><strong>How you opt in:</strong> Check text notification box in account preferences page.
+        </p>
+        <p><strong>Message frequency:</strong> Message frequency varies.</p>
+        <p><strong>Costs:</strong> Message and data rates may apply, according to your mobile plan.</p>
+        <p><strong>Opt out:</strong> Reply <strong>STOP</strong> at any time to cancel. You will receive one
+            confirmation message, and then no more messages unless you opt in again.</p>
+        <p><strong>Help:</strong> Reply <strong>HELP</strong> for assistance, or contact us at <a
+                href="mailto:carlos.gonzalez031504@gmail.com">carlos.gonzalez031504@gmail.com</a> or (561) 670-4449.
+        </p>
+        <p><strong>Carriers:</strong> Wireless carriers and their affiliates are not liable for delayed or undelivered
+            messages. Supported carriers may change without notice.</p>
+        <p>Our handling of your information is described in our <a href="privacy.html">Privacy Policy</a>.</p>
+
+        <h2>Your responsibilities</h2>
+        <p>You confirm that you are the subscriber or the authorized user of the mobile number you provide, and that the
+            information you give us is accurate. Tell us if your number changes or you no longer use it.</p>
+
+        <h2>Use of our services</h2>
+        <p>You agree to use our services only for lawful purposes and not to misuse, disrupt, or attempt to gain
+            unauthorized access to them. We may suspend or end access if these terms are violated.</p>
+
+        <h2>Disclaimers and limitation of liability</h2>
+        <p>Our services are provided "as is" and "as available." To the extent permitted by law, Carlos Gonzalez is not
+            liable for indirect, incidental, or consequential damages arising from your use of our services or text
+            messages.</p>
+
+        <h2>Changes</h2>
+        <p>We may update these terms and the messaging program. The "Last updated" date shows the latest version.
+            Continued use after a change means you accept it.</p>
+
+        <h2>Governing law</h2>
+        <p>These terms are governed by the laws of the State of Florida, without regard to conflict-of-law rules.</p>
+
+        <h2>Contact us</h2>
+        <p>Carlos Gonzalez<br>Email: <a
+                href="mailto:carlos.gonzalez031504@gmail.com">carlos.gonzalez031504@gmail.com</a><br>Phone: (561)
+            670-4449</p>
+
+        <nav><a href="{{ url_for('compliance.privacy') }}">Privacy Policy</a></nav>
+    </main>
+</body>
+
+</html>
