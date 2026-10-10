@@ -12,6 +12,7 @@ if __package__:
     from .blueprints.auth import auth as auth_blueprint
     from .blueprints.calendar import calendar as calendar_blueprint
     from .blueprints.complaints import complaints as complaints_blueprint
+    from .blueprints.compliance import compliance as compliance_blueprint
     from .blueprints.settings import settings as settings_blueprint
     from .extensions import csrf, db, login_manager
     from .models import User
@@ -20,6 +21,7 @@ else:
     from blueprints.auth import auth as auth_blueprint
     from blueprints.calendar import calendar as calendar_blueprint
     from blueprints.complaints import complaints as complaints_blueprint
+    from blueprints.compliance import compliance as compliance_blueprint
     from blueprints.settings import settings as settings_blueprint
     from extensions import csrf, db, login_manager
     from models import User
@@ -60,6 +62,7 @@ def create_app() -> Flask:
     app.register_blueprint(calendar_blueprint)
     app.register_blueprint(complaints_blueprint)
     app.register_blueprint(settings_blueprint)
+    app.register_blueprint(compliance_blueprint)
 
     @app.route("/")
     @login_required
