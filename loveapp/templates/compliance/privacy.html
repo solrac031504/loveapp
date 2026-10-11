@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Privacy Policy | Carlos Gonzalez</title>
+    <style>
+        :root {
+            --bg: #fff;
+            --fg: #1d2433;
+            --mut: #5b6475;
+            --line: #d9dde5;
+            --link: #1a56b0
+        }
+
+        @media(prefers-color-scheme:dark) {
+            :root {
+                --bg: #14171d;
+                --fg: #e6e9ef;
+                --mut: #9aa3b2;
+                --line: #2c323d;
+                --link: #7fb0ff
+            }
+        }
+
+        html {
+            box-sizing: border-box;
+            padding-top: env(safe-area-inset-top, 0)
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: inherit
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--fg);
+            font: 17px/1.65 Georgia, "Times New Roman", serif
+        }
+
+        main {
+            max-width: 42rem;
+            margin: 0 auto;
+            padding: 2.5rem 1.25rem 4rem
+        }
+
+        h1 {
+            font-size: 2rem;
+            line-height: 1.2;
+            margin: 0 0 .25rem
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            margin: 2.2rem 0 .5rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--line)
+        }
+
+        p,
+        li {
+            margin: .5rem 0
+        }
+
+        .meta {
+            color: var(--mut);
+            margin: 0 0 1.5rem
+        }
+
+        a {
+            color: var(--link)
+        }
+
+        nav {
+            margin-top: 2.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--line);
+            color: var(--mut)
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <h1>Privacy Policy</h1>
+        <p class="meta">Carlos Gonzalez &middot; Last updated: October 9, 2026</p>
+
+        <p>Carlos Gonzalez ("we," "us," "our") respects your privacy. This policy explains what information we collect,
+            how we use it, and the choices you have, including when you receive text messages from us.</p>
+
+        <h2>Information we collect</h2>
+        <ul>
+            <li><strong>Contact details</strong> you give us, such as your name, mobile phone number, and email address.
+            </li>
+            <li><strong>Consent records</strong>, such as when and how you agreed to receive text messages.</li>
+            <li><strong>Message information</strong>, such as the content of messages you send us, delivery status, and
+                replies like STOP or HELP.</li>
+            <li><strong>Usage information</strong> if you visit our website, such as browser type, pages viewed, and IP
+                address.</li>
+        </ul>
+
+        <h2>How we use your information</h2>
+        <ul>
+            <li>To send the text messages you agreed to receive, such as calendar reminders and complaint notifications.
+            </li>
+            <li>To respond to your questions and requests.</li>
+            <li>To keep records of consent and comply with the law.</li>
+            <li>To operate, secure, and improve our services.</li>
+        </ul>
+
+        <h2>Text messaging and mobile information</h2>
+        <p>We collect your mobile number and your text messaging consent only to provide the messaging program you
+            signed up for.</p>
+        <p><strong>No mobile information will be shared with third parties or affiliates for marketing or promotional
+                purposes. Text messaging originator opt-in data and consent will not be shared with any third
+                parties.</strong></p>
+        <p>Information may be shared with service providers who help us deliver messages (such as our messaging platform
+            provider and wireless carriers). They may use it only to provide services to us and are not permitted to use
+            it for their own marketing.</p>
+
+        <h2>Other sharing</h2>
+        <p>We do not sell your personal information. We may disclose information if required by law, to protect our
+            rights or safety, or in connection with a business transfer such as a merger.</p>
+
+        <h2>Your choices</h2>
+        <ul>
+            <li><strong>Stop texts:</strong> reply STOP to any message. You will receive one confirmation and no further
+                messages.</li>
+            <li><strong>Get help:</strong> reply HELP or contact us at the address below.</li>
+            <li><strong>Access, correct, or delete your information:</strong> email us and we will respond within a
+                reasonable time.</li>
+        </ul>
+
+        <h2>Retention and security</h2>
+        <p>We keep personal information only as long as needed for the purposes above and to meet legal requirements. We
+            use reasonable safeguards, but no method of transmission or storage is completely secure.</p>
+
+        <h2>Intended Audience</h2>
+        <p>Our services are not directed to anybody other than Carlos Gonzalez and Nisa Pierre.</p>
+
+        <h2>Changes to this policy</h2>
+        <p>We may update this policy. The "Last updated" date above shows the latest version.</p>
+
+        <h2>Contact us</h2>
+        <p>Carlos Gonzalez<br>Email: <a
+                href="mailto:carlos.gonzalez031504@gmail.com">carlos.gonzalez031504@gmail.com</a><br>Phone: (561)
+            670-4449</p>
+
+        <nav><a href="{{ url_for('compliance.terms') }}">Terms and Conditions</a></nav>
+    </main>
+</body>
+
+</html>

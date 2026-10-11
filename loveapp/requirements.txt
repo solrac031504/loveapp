@@ -23,8 +23,7 @@ messagebird-sdk==0.86.0
 pydantic==2.13.5
 pydantic_core==2.46.5
 python-dotenv==1.2.3
-SQLAlchemy==2.0.52
-typing-inspection==0.4.4
+SQLAlchemy==2.1.1
 typing_extensions==4.16.0
 tzlocal==5.4.4
 Werkzeug==3.1.9
