@@ -95,7 +95,7 @@ class EmailNotification(db.Model):
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     notif_type = db.Column(db.String(50))  # 'event', 'complaint', 'system'
-    message_id = db.Column(db.Integer)  # save the return ID from the API
+    message_id = db.Column(db.String(20))  # save the return ID from the API
 
     def __init__(
         self, recipient_id: int, subject: str, message: str, notif_type: str
