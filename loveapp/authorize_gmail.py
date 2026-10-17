@@ -21,7 +21,7 @@ def main() -> None:
     creds: UserCredentials | Credentials = flow.run_local_server(
         port=0, access_type="offline", prompt="consent"
     )
-    with open("token.json", "w") as f:
+    with open(os.path.join("instance", "token.json"), "w") as f:
         f.write(creds.to_json())
     print("Saved token.json")
 
