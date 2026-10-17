@@ -4,6 +4,8 @@ Requires credentials.json (OAuth client ID of type "Desktop app") in the same fo
     pip install google-auth-oauthlib google-api-python-client
 """
 
+import os
+
 from google.auth.external_account_authorized_user import Credentials as UserCredentials
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -13,7 +15,7 @@ SCOPES: list[str] = ["https://www.googleapis.com/auth/gmail.send"]
 
 def main() -> None:
     flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
-        "credentials.json", SCOPES
+        os.path.join("instance", "credentials.json"), SCOPES
     )
     # access_type/prompt make sure Google returns a long-lived refresh token
     creds: UserCredentials | Credentials = flow.run_local_server(
