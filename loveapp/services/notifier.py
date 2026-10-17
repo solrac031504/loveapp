@@ -31,6 +31,7 @@ except ImportError:
     from models import EmailNotification, TextNotification, User
 
 
+# TODO switch message to template name with added context
 def notify(user: User, subject: str, message: str, notif_type: str) -> None:
     """Send `message` to `user` over every channel they have enabled.
 
