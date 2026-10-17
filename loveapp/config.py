@@ -12,8 +12,13 @@ class NotificationConfig:
 
     GMAIL_CREDS_PATH: str | None = os.getenv("GMAIL_CREDS_PATH")
     GMAIL_TOKEN_PATH: str | None = os.getenv("GMAIL_TOKEN_PATH")
+    _GMAIL_SCOPES: str | None = os.getenv("GMAIL_SCOPES")
+
+    SCOPES: list[str] = _GMAIL_SCOPES.split(";") if _GMAIL_SCOPES else []
 
     @classmethod
     def email_enabled(cls) -> bool:
         """Whether enough Gmail config is present to actually send mail."""
-        return bool(cls.GMAIL_CREDS_PATH and cls.GMAIL_TOKEN_PATH)
+        return bool(
+            cls.GMAIL_CREDS_PATH and cls.GMAIL_TOKEN_PATH and len(cls.SCOPES) > 0
+        )

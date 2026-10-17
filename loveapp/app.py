@@ -138,11 +138,13 @@ def authorize_gmail_cli(app: Flask) -> None:
     def authorize_gmail() -> None:
         GMAIL_CREDS_PATH: str | None = os.getenv("GMAIL_CREDS_PATH")
         GMAIL_TOKEN_PATH: str | None = os.getenv("GMAIL_TOKEN_PATH")
-        SCOPES: list[str] = ["https://www.googleapis.com/auth/gmail.send"]
+        SCOPES: str | None = os.getenv("GMAIL_SCOPES")
 
-        if GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH:
+        if GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH and SCOPES:
+            scopes: list[str] = SCOPES.split(";")
+
             flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
-                GMAIL_CREDS_PATH, SCOPES
+                GMAIL_CREDS_PATH, scopes
             )
             # access_type/prompt make sure Google returns a long-lived refresh token
             creds: UserCredentials | Credentials = flow.run_local_server(

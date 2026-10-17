@@ -14,9 +14,12 @@ message once the caller has already decided who should get it.
 
 from __future__ import annotations
 
-import smtplib
-import ssl
+import base64
 from email.message import EmailMessage
+
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 try:
     from ..config import NotificationConfig
@@ -65,28 +68,50 @@ def _send_email(user: User, subject: str, message: str, notif_type: str) -> None
         print(f"[email:error] failed to email {user.email!r}: {ex}")
 
 
+def _get_credentials(token_path: str, scopes: list[str]) -> Credentials:
+    """
+    Get credentials from token file or refresh token
+    """
+    creds: Credentials = Credentials.from_authorized_user_file(token_path, scopes)
+
+    if not creds.valid:
+        if creds.refresh_token:
+            creds.refresh(Request())
+            with open(token_path, "w") as f:
+                f.write(creds.to_json())
+        else:
+            print(
+                "[email:error] token invalid and no refresh token. Reauthorization needed"
+            )
+
+    return creds
+
+
 def _deliver_email(to_address: str, subject: str, body: str) -> None:
     # Only called when NotificationConfig.email_enabled() is true, which
     # guarantees both of these are non-None -- asserted here for pyright.
-    gmail_address: str | None = NotificationConfig.GMAIL_ADDRESS
-    gmail_app_password: str | None = NotificationConfig.GMAIL_APP_PASSWORD
-    assert gmail_address and gmail_app_password
+    GMAIL_CREDS_PATH: str | None = NotificationConfig.GMAIL_CREDS_PATH
+    GMAIL_TOKEN_PATH: str | None = NotificationConfig.GMAIL_TOKEN_PATH
+    SCOPES: list[str] = NotificationConfig.SCOPES
+    assert GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH
 
-    msg: EmailMessage = EmailMessage()
-    msg["Subject"] = subject
-    msg["From"] = gmail_address
-    msg["To"] = to_address
+    service = build(
+        "gmail", "v1", credentials=_get_credentials(GMAIL_TOKEN_PATH, SCOPES)
+    )
+
+    msg = EmailMessage()
     msg.set_content(body)
+    msg["To"] = to_address
+    msg["Subject"] = subject
 
-    context: ssl.SSLContext = ssl.create_default_context()
-    server: smtplib.SMTP_SSL
-    with smtplib.SMTP_SSL(
-        NotificationConfig.GMAIL_SMTP_HOST,
-        NotificationConfig.GMAIL_SMTP_PORT,
-        context=context,
-    ) as server:
-        server.login(gmail_address, gmail_app_password)
-        server.send_message(msg)
+    encoded: str = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+
+    result = (
+        service.users().messages().send(userId="me", body={"raw": encoded}).execute()
+    )
+
+    # TODO add returned message ID to EmailNotification table
+    print(f"Message Id: {result['id']}")
 
 
 def _send_text(user: User, message: str, notif_type: str) -> None:
