@@ -45,14 +45,14 @@ def notify(user: User, subject: str, message: str, notif_type: str) -> None:
 
 
 def _send_email(user: User, subject: str, message: str, notif_type: str) -> None:
-    db.session.add(
-        EmailNotification(
-            recipient_id=user.id,
-            subject=subject,
-            message=message,
-            notif_type=notif_type,
-        )
+    email_notification = EmailNotification(
+        recipient_id=user.id,
+        subject=subject,
+        message=message,
+        notif_type=notif_type,
     )
+
+    db.session.add(email_notification)
     db.session.commit()
 
     if not NotificationConfig.email_enabled():
@@ -63,7 +63,10 @@ def _send_email(user: User, subject: str, message: str, notif_type: str) -> None
         return
 
     try:
-        _deliver_email(user.email, subject, message)
+        message_id = _deliver_email(user.email, subject, message)
+        email_notification.message_id = message_id
+        db.session.commit()
+
     except Exception as ex:  # noqa: BLE001 -- delivery failures must not bubble up
         print(f"[email:error] failed to email {user.email!r}: {ex}")
 
@@ -87,7 +90,7 @@ def _get_credentials(token_path: str, scopes: list[str]) -> Credentials:
     return creds
 
 
-def _deliver_email(to_address: str, subject: str, body: str) -> None:
+def _deliver_email(to_address: str, subject: str, body: str) -> int:
     # Only called when NotificationConfig.email_enabled() is true, which
     # guarantees both of these are non-None -- asserted here for pyright.
     GMAIL_CREDS_PATH: str | None = NotificationConfig.GMAIL_CREDS_PATH
@@ -110,8 +113,7 @@ def _deliver_email(to_address: str, subject: str, body: str) -> None:
         service.users().messages().send(userId="me", body={"raw": encoded}).execute()
     )
 
-    # TODO add returned message ID to EmailNotification table
-    print(f"Message Id: {result['id']}")
+    return int(result["id"])
 
 
 def _send_text(user: User, message: str, notif_type: str) -> None:
