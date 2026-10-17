@@ -90,7 +90,7 @@ def _get_credentials(token_path: str, scopes: list[str]) -> Credentials:
     return creds
 
 
-def _deliver_email(to_address: str, subject: str, body: str) -> int:
+def _deliver_email(to_address: str, subject: str, body: str) -> str:
     # Only called when NotificationConfig.email_enabled() is true, which
     # guarantees both of these are non-None -- asserted here for pyright.
     GMAIL_CREDS_PATH: str | None = NotificationConfig.GMAIL_CREDS_PATH
@@ -113,7 +113,7 @@ def _deliver_email(to_address: str, subject: str, body: str) -> int:
         service.users().messages().send(userId="me", body={"raw": encoded}).execute()
     )
 
-    return int(result["id"])
+    return result["id"]
 
 
 def _send_text(user: User, message: str, notif_type: str) -> None:
