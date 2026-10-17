@@ -1,6 +1,6 @@
 """Low-level notification delivery.
 
-Two channels: email (sent for real, via Gmail SMTP) and text (not wired
+Two channels: email (via Gmail API) and text (not wired
 up to a real provider yet, so it's just logged to the console). Both
 channels record what they sent in the corresponding *Notification table
 regardless of whether delivery actually succeeded, and both respect the
