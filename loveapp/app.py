@@ -6,6 +6,9 @@ from dotenv import load_dotenv
 from flask import Flask, Response, render_template
 from flask_login import login_required
 from flask_migrate import Migrate
+from google.auth.external_account_authorized_user import Credentials as UserCredentials
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
 
 if __package__:
     from . import models
@@ -79,6 +82,7 @@ def create_app() -> Flask:
 
     register_cli(app)
     password_change_cli(app)
+    authorize_gmail_cli(app)
 
     return app
 
@@ -125,6 +129,30 @@ def password_change_cli(app: Flask) -> None:
         user.set_password(password)
         db.session.commit()
         click.echo(f"Updated '{username}' password")
+
+
+def authorize_gmail_cli(app: Flask) -> None:
+    """CLI to generate Gmail token file"""
+
+    @app.cli.command("authorize-gmail")
+    def authorize_gmail() -> None:
+        GMAIL_CREDS_PATH: str | None = os.getenv("GMAIL_CREDS_PATH")
+        GMAIL_TOKEN_PATH: str | None = os.getenv("GMAIL_TOKEN_PATH")
+        SCOPES: list[str] = ["https://www.googleapis.com/auth/gmail.send"]
+
+        if GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH:
+            flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
+                GMAIL_CREDS_PATH, SCOPES
+            )
+            # access_type/prompt make sure Google returns a long-lived refresh token
+            creds: UserCredentials | Credentials = flow.run_local_server(
+                port=0, access_type="offline", prompt="consent"
+            )
+            with open(GMAIL_TOKEN_PATH, "w") as f:
+                f.write(creds.to_json())
+            print("Saved token file")
+        else:
+            click.echo("Creds path or token path is not specified")
 
 
 if __name__ == "__main__":
