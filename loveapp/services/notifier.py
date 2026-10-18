@@ -15,6 +15,7 @@ message once the caller has already decided who should get it.
 from __future__ import annotations
 
 import base64
+import os
 import re
 from email.message import EmailMessage
 
@@ -49,7 +50,14 @@ def notify(
     request triggered the notification, such as filing a complaint.
     """
     if user.send_email:
-        _send_email(user, subject, message, notif_type, template_name, context)
+        _send_email(
+            user,
+            subject,
+            message,
+            notif_type,
+            os.path.join("email", template_name),
+            context,
+        )
     if user.send_message:
         _send_text(user, message, notif_type)
 
