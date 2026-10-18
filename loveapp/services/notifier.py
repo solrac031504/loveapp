@@ -40,8 +40,8 @@ def notify(
     subject: str,
     message: str,
     notif_type: str,
-    template_name: str,
-    context: dict[str, str],
+    context: dict,
+    template_name: str = "generic_notification.html",
 ) -> None:
     """Send `message` to `user` over every channel they have enabled.
 
@@ -77,7 +77,7 @@ def _send_email(
     message: str,
     notif_type: str,
     template_name: str,
-    context: dict[str, str],
+    context: dict,
 ) -> None:
 
     context["message"] = message
