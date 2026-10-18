@@ -34,7 +34,6 @@ except ImportError:
     from models import EmailNotification, TextNotification, User
 
 
-# TODO switch message to template name with added context
 def notify(
     user: User,
     subject: str,
