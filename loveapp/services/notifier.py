@@ -15,6 +15,7 @@ message once the caller has already decided who should get it.
 from __future__ import annotations
 
 import base64
+import re
 from email.message import EmailMessage
 
 from flask import render_template
@@ -53,6 +54,15 @@ def notify(
         _send_text(user, message, notif_type)
 
 
+def _html_to_text(html: str) -> str:
+    """Crude plain-text fallback for email clients that don't render HTML."""
+    html = re.sub(r"(?is)<(style|head|script).*?</\1>", "", html)
+    html = re.sub(r"(?i)<br\s*/?>|</p>|</tr>|</h\d>", "\n", html)
+    text = re.sub(r"<[^>]+>", "", html)
+    text = re.sub(r"[ \t]+", " ", text)
+    return re.sub(r"\n\s*\n+", "\n\n", text).strip()
+
+
 def _send_email(
     user: User,
     subject: str,
@@ -61,10 +71,14 @@ def _send_email(
     template_name: str,
     context: dict[str, str],
 ) -> None:
+
+    context["message"] = message
+    body = render_template(template_name, **context)
+
     email_notification = EmailNotification(
         recipient_id=user.id,
         subject=subject,
-        message=message,
+        message=_html_to_text(body),
         notif_type=notif_type,
     )
 
@@ -77,9 +91,6 @@ def _send_email(
             f"{subject!r} -- {message!r}"
         )
         return
-
-    context["message"] = message
-    body = render_template(template_name, **context)
 
     try:
         message_id = _deliver_email(user.email, subject, body)
@@ -122,7 +133,8 @@ def _deliver_email(to_address: str, subject: str, body: str) -> str:
     )
 
     msg = EmailMessage()
-    msg.set_content(body)
+    msg.set_content(_html_to_text(body))
+    msg.add_alternative(body, subtype="html")
     msg["To"] = to_address
     msg["Subject"] = subject
 
