@@ -17,6 +17,7 @@ from __future__ import annotations
 import base64
 from email.message import EmailMessage
 
+from flask import render_template
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -32,7 +33,14 @@ except ImportError:
 
 
 # TODO switch message to template name with added context
-def notify(user: User, subject: str, message: str, notif_type: str) -> None:
+def notify(
+    user: User,
+    subject: str,
+    message: str,
+    notif_type: str,
+    template_name: str,
+    context: dict[str, str],
+) -> None:
     """Send `message` to `user` over every channel they have enabled.
 
     Never raises: a delivery failure (e.g. bad Gmail credentials, no
@@ -40,12 +48,19 @@ def notify(user: User, subject: str, message: str, notif_type: str) -> None:
     request triggered the notification, such as filing a complaint.
     """
     if user.send_email:
-        _send_email(user, subject, message, notif_type)
+        _send_email(user, subject, message, notif_type, template_name, context)
     if user.send_message:
         _send_text(user, message, notif_type)
 
 
-def _send_email(user: User, subject: str, message: str, notif_type: str) -> None:
+def _send_email(
+    user: User,
+    subject: str,
+    message: str,
+    notif_type: str,
+    template_name: str,
+    context: dict[str, str],
+) -> None:
     email_notification = EmailNotification(
         recipient_id=user.id,
         subject=subject,
@@ -63,8 +78,11 @@ def _send_email(user: User, subject: str, message: str, notif_type: str) -> None
         )
         return
 
+    context["message"] = message
+    body = render_template(template_name, **context)
+
     try:
-        message_id = _deliver_email(user.email, subject, message)
+        message_id = _deliver_email(user.email, subject, body)
         email_notification.message_id = message_id
         db.session.commit()
 
