@@ -41,7 +41,7 @@ def notify_complaint_filed(complaint: Complaint) -> None:
         subject,
         message,
         notif_type="complaint",
-        context={"button_url": _BUTTON_URL},
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
     )
 
 

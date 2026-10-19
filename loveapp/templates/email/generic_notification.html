@@ -1,9 +1,9 @@
 {% extends "email_base.html" %}
 
-{% block title %}Notification for {{ current_user.username }}{% endblock %}
+{% block title %}Notification for {{ name | default(current_user.username) }}{% endblock %}
 
 {% block content %}
-<h2 style="margin:0 0 16px;color:#d6336c;font-size:20px;">Hi {{ current_user.username }},</h2>
+<h2 style="margin:0 0 16px;color:#d6336c;font-size:20px;">Hi {{ name | default(current_user.username) }},</h2>
 <p style="margin:0 0 24px;">{{ message }}</p>
 
 {% if button_url %}

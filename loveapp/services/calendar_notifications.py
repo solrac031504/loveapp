@@ -53,7 +53,7 @@ def notify_event_created(event: CalendarEvent, created_by: User) -> None:
         subject,
         message,
         notif_type="event",
-        context={"button_url": _BUTTON_URL},
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
     )
 
 
@@ -74,7 +74,7 @@ def notify_event_updated(event: CalendarEvent, updated_by: User) -> None:
         subject,
         message,
         notif_type="event",
-        context={"button_url": _BUTTON_URL},
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
     )
 
 
@@ -92,5 +92,5 @@ def notify_event_deleted(event_title: str, deleted_by: User) -> None:
         subject,
         message,
         notif_type="event",
-        context={"button_url": _BUTTON_URL},
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
     )
