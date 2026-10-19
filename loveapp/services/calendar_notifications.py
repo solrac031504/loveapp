@@ -7,12 +7,17 @@ User row isn't the one who took the action.
 
 from __future__ import annotations
 
+import os
+from urllib.parse import urljoin
+
 try:
     from ..models import CalendarEvent, User
     from .notifier import notify
 except ImportError:
     from models import CalendarEvent, User
     from services.notifier import notify
+
+_BUTTON_URL: str = urljoin(os.getenv("BASE_URL", "http://127.0.0.1:5000"), "calendar")
 
 
 def _other_user(user_id: int) -> User | None:
@@ -43,7 +48,13 @@ def notify_event_created(event: CalendarEvent, created_by: User) -> None:
     if event.description:
         message += f"\n\n{event.description}"
 
-    notify(recipient, subject, message, notif_type="event")
+    notify(
+        recipient,
+        subject,
+        message,
+        notif_type="event",
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
+    )
 
 
 def notify_event_updated(event: CalendarEvent, updated_by: User) -> None:
@@ -58,7 +69,13 @@ def notify_event_updated(event: CalendarEvent, updated_by: User) -> None:
         f"When: {_format_when(event)}"
     )
 
-    notify(recipient, subject, message, notif_type="event")
+    notify(
+        recipient,
+        subject,
+        message,
+        notif_type="event",
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
+    )
 
 
 def notify_event_deleted(event_title: str, deleted_by: User) -> None:
@@ -70,4 +87,10 @@ def notify_event_deleted(event_title: str, deleted_by: User) -> None:
     subject: str = f"Event removed: {event_title}"
     message: str = f'{deleted_by.username} removed the calendar event "{event_title}".'
 
-    notify(recipient, subject, message, notif_type="event")
+    notify(
+        recipient,
+        subject,
+        message,
+        notif_type="event",
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
+    )

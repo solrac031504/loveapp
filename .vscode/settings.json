@@ -11,7 +11,7 @@
         "editor.wordBasedSuggestions": "off",
         "editor.codeActionsOnSave": {
             "source.organizeImports": "explicit",
-            "source.addTypeAnnotation": "always",
+            "source.addTypeAnnotation": "never",
             "source.unusedImports": "always"
         }
     },
@@ -20,5 +20,12 @@
     "python-envs.defaultEnvManager": "ms-python.python:system",
     "python.analysis.extraPaths": [
         "./loveapp"
-    ]
+    ],
+    "[json]": {
+        "editor.quickSuggestions": {
+            "strings": true
+        },
+        "editor.suggest.insertMode": "replace",
+        "editor.formatOnSave": true
+    }
 }

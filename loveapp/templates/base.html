@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}LoveApp{% endblock %}</title>
+  <title>{% block title %}{{ app_name | default("LoveApp") }}{% endblock %}</title>
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
 
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
-    <p class="brand"><span class="brand-heart">&#10084;</span> LoveApp</p>
+    <p class="brand"><span class="brand-heart">&#10084;</span> {{ app_name | default("LoveApp") }}</p>
 
     {% if current_user.is_authenticated %}
     <nav class="nav-actions">

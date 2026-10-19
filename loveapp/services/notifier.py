@@ -1,6 +1,6 @@
 """Low-level notification delivery.
 
-Two channels: email (sent for real, via Gmail SMTP) and text (not wired
+Two channels: email (via Gmail API) and text (not wired
 up to a real provider yet, so it's just logged to the console). Both
 channels record what they sent in the corresponding *Notification table
 regardless of whether delivery actually succeeded, and both respect the
@@ -14,9 +14,15 @@ message once the caller has already decided who should get it.
 
 from __future__ import annotations
 
-import smtplib
-import ssl
+import base64
+import os
+import re
 from email.message import EmailMessage
+
+from flask import render_template
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from googleapiclient.discovery import build
 
 try:
     from ..config import NotificationConfig
@@ -28,7 +34,14 @@ except ImportError:
     from models import EmailNotification, TextNotification, User
 
 
-def notify(user: User, subject: str, message: str, notif_type: str) -> None:
+def notify(
+    user: User,
+    subject: str,
+    message: str,
+    notif_type: str,
+    context: dict,
+    template_name: str = "generic_notification.html",
+) -> None:
     """Send `message` to `user` over every channel they have enabled.
 
     Never raises: a delivery failure (e.g. bad Gmail credentials, no
@@ -36,20 +49,47 @@ def notify(user: User, subject: str, message: str, notif_type: str) -> None:
     request triggered the notification, such as filing a complaint.
     """
     if user.send_email:
-        _send_email(user, subject, message, notif_type)
+        _send_email(
+            user,
+            subject,
+            message,
+            notif_type,
+            os.path.join("email", template_name),
+            context,
+        )
     if user.send_message:
         _send_text(user, message, notif_type)
 
 
-def _send_email(user: User, subject: str, message: str, notif_type: str) -> None:
-    db.session.add(
-        EmailNotification(
-            recipient_id=user.id,
-            subject=subject,
-            message=message,
-            notif_type=notif_type,
-        )
+def _html_to_text(html: str) -> str:
+    """Crude plain-text fallback for email clients that don't render HTML."""
+    html = re.sub(r"(?is)<(style|head|script).*?</\1>", "", html)
+    html = re.sub(r"(?i)<br\s*/?>|</p>|</tr>|</h\d>", "\n", html)
+    text = re.sub(r"<[^>]+>", "", html)
+    text = re.sub(r"[ \t]+", " ", text)
+    return re.sub(r"\n\s*\n+", "\n\n", text).strip()
+
+
+def _send_email(
+    user: User,
+    subject: str,
+    message: str,
+    notif_type: str,
+    template_name: str,
+    context: dict,
+) -> None:
+
+    context["message"] = message
+    body = render_template(template_name, **context)
+
+    email_notification = EmailNotification(
+        recipient_id=user.id,
+        subject=subject,
+        message=_html_to_text(body),
+        notif_type=notif_type,
     )
+
+    db.session.add(email_notification)
     db.session.commit()
 
     if not NotificationConfig.email_enabled():
@@ -60,33 +100,58 @@ def _send_email(user: User, subject: str, message: str, notif_type: str) -> None
         return
 
     try:
-        _deliver_email(user.email, subject, message)
+        message_id = _deliver_email(user.email, subject, body)
+        email_notification.message_id = message_id
+        db.session.commit()
+
     except Exception as ex:  # noqa: BLE001 -- delivery failures must not bubble up
         print(f"[email:error] failed to email {user.email!r}: {ex}")
 
 
-def _deliver_email(to_address: str, subject: str, body: str) -> None:
+def _get_credentials(token_path: str, scopes: list[str]) -> Credentials:
+    """
+    Get credentials from token file or refresh token
+    """
+    creds: Credentials = Credentials.from_authorized_user_file(token_path, scopes)
+
+    if not creds.valid:
+        if creds.refresh_token:
+            creds.refresh(Request())
+            with open(token_path, "w") as f:
+                f.write(creds.to_json())
+        else:
+            print(
+                "[email:error] token invalid and no refresh token. Reauthorization needed"
+            )
+
+    return creds
+
+
+def _deliver_email(to_address: str, subject: str, body: str) -> str:
     # Only called when NotificationConfig.email_enabled() is true, which
     # guarantees both of these are non-None -- asserted here for pyright.
-    gmail_address: str | None = NotificationConfig.GMAIL_ADDRESS
-    gmail_app_password: str | None = NotificationConfig.GMAIL_APP_PASSWORD
-    assert gmail_address and gmail_app_password
+    GMAIL_CREDS_PATH: str | None = NotificationConfig.GMAIL_CREDS_PATH
+    GMAIL_TOKEN_PATH: str | None = NotificationConfig.GMAIL_TOKEN_PATH
+    SCOPES: list[str] = NotificationConfig.SCOPES
+    assert GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH
 
-    msg: EmailMessage = EmailMessage()
-    msg["Subject"] = subject
-    msg["From"] = gmail_address
+    service = build(
+        "gmail", "v1", credentials=_get_credentials(GMAIL_TOKEN_PATH, SCOPES)
+    )
+
+    msg = EmailMessage()
+    msg.set_content(_html_to_text(body))
+    msg.add_alternative(body, subtype="html")
     msg["To"] = to_address
-    msg.set_content(body)
+    msg["Subject"] = subject
 
-    context: ssl.SSLContext = ssl.create_default_context()
-    server: smtplib.SMTP_SSL
-    with smtplib.SMTP_SSL(
-        NotificationConfig.GMAIL_SMTP_HOST,
-        NotificationConfig.GMAIL_SMTP_PORT,
-        context=context,
-    ) as server:
-        server.login(gmail_address, gmail_app_password)
-        server.send_message(msg)
+    encoded: str = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+
+    result = (
+        service.users().messages().send(userId="me", body={"raw": encoded}).execute()
+    )
+
+    return result["id"]
 
 
 def _send_text(user: User, message: str, notif_type: str) -> None:

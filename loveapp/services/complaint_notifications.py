@@ -7,12 +7,18 @@ User row isn't the one in question.
 
 from __future__ import annotations
 
+import os
+from urllib.parse import urljoin
+
 try:
     from ..models import Complaint, User
     from .notifier import notify
 except ImportError:
     from models import Complaint, User
     from services.notifier import notify
+
+
+_BUTTON_URL: str = urljoin(os.getenv("BASE_URL", "http://127.0.0.1:5000"), "calendar")
 
 
 def _other_user(user_id: int) -> User | None:
@@ -30,7 +36,13 @@ def notify_complaint_filed(complaint: Complaint) -> None:
     )
     subject: str = f"New complaint: {complaint.title}"
     message: str = f'{submitter_name} filed a new complaint: "{complaint.title}"\n\n{complaint.body}'
-    notify(recipient, subject, message, notif_type="complaint")
+    notify(
+        recipient,
+        subject,
+        message,
+        notif_type="complaint",
+        context={"name": recipient.username, "button_url": _BUTTON_URL},
+    )
 
 
 def notify_status_changed(
@@ -53,4 +65,10 @@ def notify_status_changed(
         f'Your complaint "{complaint.title}" was updated from '
         f"{old_status} to {new_status} by {changed_by.username}."
     )
-    notify(submitter, subject, message, notif_type="complaint")
+    notify(
+        submitter,
+        subject,
+        message,
+        notif_type="complaint",
+        context={"button_url": _BUTTON_URL},
+    )
