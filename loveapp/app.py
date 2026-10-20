@@ -6,9 +6,7 @@ from dotenv import load_dotenv
 from flask import Flask, Response, render_template
 from flask_login import login_required
 from flask_migrate import Migrate
-from google.auth.external_account_authorized_user import Credentials as UserCredentials
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import Flow
 
 if __package__:
     from . import models
@@ -132,29 +130,59 @@ def password_change_cli(app: Flask) -> None:
 
 
 def authorize_gmail_cli(app: Flask) -> None:
-    """CLI to generate Gmail token file"""
+    """CLI to generate Gmail token file on a headless server.
+
+    Uses a manual copy/paste flow with a Web application OAuth client, so no
+    browser is needed on the server.
+
+    Requires GMAIL_REDIRECT_URI (optional, defaults to http://localhost:8080/)
+    to be registered under "Authorized redirect URIs" for the OAuth client in
+    Google Cloud Console.
+    """
 
     @app.cli.command("authorize-gmail")
     def authorize_gmail() -> None:
         GMAIL_CREDS_PATH: str | None = os.getenv("GMAIL_CREDS_PATH")
         GMAIL_TOKEN_PATH: str | None = os.getenv("GMAIL_TOKEN_PATH")
         SCOPES: str | None = os.getenv("GMAIL_SCOPES")
+        redirect_uri: str = os.getenv("GMAIL_REDIRECT_URI", "http://localhost:8080/")
 
-        if GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH and SCOPES:
-            scopes: list[str] = SCOPES.split(";")
-
-            flow: InstalledAppFlow = InstalledAppFlow.from_client_secrets_file(
-                GMAIL_CREDS_PATH, scopes
-            )
-            # access_type/prompt make sure Google returns a long-lived refresh token
-            creds: UserCredentials | Credentials = flow.run_local_server(
-                port=0, access_type="offline", prompt="consent"
-            )
-            with open(GMAIL_TOKEN_PATH, "w") as f:
-                f.write(creds.to_json())
-            print("Saved token file")
-        else:
+        if not (GMAIL_CREDS_PATH and GMAIL_TOKEN_PATH and SCOPES):
             click.echo("Creds path or token path is not specified")
+            return
+
+        scopes: list[str] = SCOPES.split(";")
+
+        # oauthlib refuses http:// redirects by default; the redirect to
+        # localhost is never actually served, we only copy the URL from it.
+        os.environ.setdefault("OAUTHLIB_INSECURE_TRANSPORT", "1")
+        # Don't fail if Google returns the scopes in a different order/form.
+        os.environ.setdefault("OAUTHLIB_RELAX_TOKEN_SCOPE", "1")
+
+        flow: Flow = Flow.from_client_secrets_file(
+            GMAIL_CREDS_PATH, scopes=scopes, redirect_uri=redirect_uri
+        )
+
+        # access_type/prompt make sure Google returns a long-lived refresh token
+        auth_url, _state = flow.authorization_url(
+            access_type="offline", prompt="consent"
+        )
+
+        click.echo("\n1. Open this URL in a browser on your own computer:\n")
+        click.echo(auth_url)
+        click.echo(
+            "\n2. Sign in and approve access. The browser will then fail to load"
+            f"\n   {redirect_uri} -- that is expected."
+            "\n3. Copy the FULL URL from the browser's address bar"
+            "\n   (it contains ?code=...) and paste it below.\n"
+        )
+        response_url: str = click.prompt("Paste the redirected URL").strip()
+
+        flow.fetch_token(authorization_response=response_url)
+
+        with open(GMAIL_TOKEN_PATH, "w") as f:
+            f.write(flow.credentials.to_json())
+        click.echo("Saved token file")
 
 
 if __name__ == "__main__":
