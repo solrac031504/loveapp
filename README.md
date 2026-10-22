@@ -1,105 +1,165 @@
 # LoveApp
 
-LoveApp is a Flask-based web application for managing relationship communication, complaint tracking, and notifications between two users. The app includes a private login flow, complaint filing and status updates, and support for email/text-style notifications for important events.
+LoveApp is a private Flask application for two people to share a calendar and
+manage relationship complaints. Users sign in with accounts created by an
+administrator; there is no public registration page.
 
 ## Features
 
-- Secure user authentication with Flask-Login
-- Complaint submission and status tracking
-- Open/resolved complaint filtering
-- Email and SMS-style notification support
-- Calendar event model support for future scheduling features
-- SQLite database with Flask-SQLAlchemy and Flask-Migrate
-- CLI command for creating users manually
+- Login-protected home, calendar, complaints, and account settings
+- Shared calendar with event types, event editing, and creator-only deletion
+- Complaint filing, status changes (`open`, `acknowledged`, and `resolved`),
+  and submitter-only deletion
+- Per-user email and text notification preferences
+- Optional email delivery through the Gmail API
+- Privacy and terms pages at `/privacy` and `/terms`
+- SQLite database, SQLAlchemy models, and Flask-Migrate/Alembic migrations
 
-## Project Structure
+The app is designed for two accounts, not as a multi-couple service. Email
+notifications are sent through Gmail only when Gmail OAuth is configured.
+There is no SMS provider connected: text notifications are stored in the
+database and written to the application log.
 
-- `loveapp/app.py` — application factory and CLI registration
-- `loveapp/models.py` — database models for users, complaints, notifications, and calendar data
-- `loveapp/blueprints/` — Flask blueprints for authentication and complaints
-- `loveapp/services/` — notification logic
-- `loveapp/templates/` — HTML templates
-- `loveapp/static/` — frontend assets
-- `loveapp/migrations/` — Alembic migration files
-
-## Tech Stack
-
-- Python 3
-- Flask
-- Flask-SQLAlchemy
-- Flask-Login
-- Flask-WTF
-- SQLite
-- APScheduler
-- Flask-Migrate
-
-## Prerequisites
-
-- Python 3.10+
-- A virtual environment tool such as `venv`
-
-## Setup
-
-From the repository root:
-
-```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r loveapp/requirements.txt
-```
-
-Create a `.env` file inside the `loveapp` directory for local configuration if needed. Example:
-
-```env
-SECRET_KEY=change-me
-SQLALCHEMY_DATABASE_URI=sqlite:////absolute/path/to/LoveApp.db
-GMAIL_ADDRESS=you@gmail.com
-GMAIL_APP_PASSWORD=your-app-password
-```
-
-Notes:
-
-- `SECRET_KEY` is required for secure session cookies.
-- The app will fall back to a local SQLite database in `loveapp/instance/LoveApp.db` if no database URI is configured.
-- Gmail settings are optional and only needed if you want real email notifications enabled.
-
-## Running the App
-
-From the repository root:
-
-```bash
-export FLASK_APP=loveapp.app
-flask run --debug
-```
-
-Or run the app module directly:
-
-```bash
-python loveapp/app.py
-```
-
-The app will start on the default Flask development server, typically at:
+## Project layout
 
 ```text
-http://127.0.0.1:5000/
+deploy/                     Example Nginx, systemd, and update configuration
+loveapp/
+  app.py                    Application factory and Flask CLI commands
+  blueprints/               Authentication, calendar, complaints, settings,
+                            and compliance routes
+  services/                 Calendar and complaint notification behavior
+  templates/                Jinja templates
+  static/                   CSS and image assets
+  migrations/               Alembic migration environment and revisions
+  requirements.txt          Pinned Python dependencies
 ```
 
-## Creating a User
+## Requirements
 
-This app does not include a public registration screen. Users are created through the Flask CLI:
+- Python 3.10 or newer
+- `pip` and Python's `venv` module
+
+## Local setup
+
+Run these commands from the repository root:
 
 ```bash
-flask create-user <username> <email> <phone> --password <password>
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r loveapp/requirements.txt
 ```
 
-Example:
+Create `loveapp/.env` for local application configuration:
+
+```env
+SECRET_KEY=replace-with-a-long-random-value
+SQLALCHEMY_DATABASE_URI=sqlite:///LoveApp.db
+```
+
+The app loads this file when its application factory runs. If
+`SQLALCHEMY_DATABASE_URI` is omitted, the database defaults to
+`loveapp/instance/LoveApp.db`. Relative SQLite paths are resolved from the
+`loveapp` directory. Keep secrets and OAuth credential files out of source
+control.
+
+Start the development server from the repository root:
 
 ```bash
-flask create-user someuser someuser@example.com 555-0100 --password password
+flask --app loveapp.app run --debug
 ```
 
-The command will prompt for a password and store the hashed password in the database.
+Open <http://127.0.0.1:5000/>. The home page and application features require
+sign-in.
 
-## Database Notes
+## Accounts
 
-On first app startup, the database tables are created automatically in the app context. For migrations and schema changes, the project includes Alembic support under `loveapp/migrations`.
+There is no self-service sign-up. Create accounts from the repository root
+with the Flask CLI; it prompts for a password if one is not supplied:
+
+```bash
+flask --app loveapp.app create-user <username> <email> <phone>
+```
+
+For example:
+
+```bash
+flask --app loveapp.app create-user alex alex@example.com 555-0100
+```
+
+Passwords are stored as password hashes. To set a new password for an
+existing account:
+
+```bash
+flask --app loveapp.app reset-password <username>
+```
+
+## Database and migrations
+
+The application creates any missing database tables during startup. The
+project also includes Flask-Migrate/Alembic revisions under
+`loveapp/migrations/`. To apply available migrations:
+
+```bash
+flask --app loveapp.app db upgrade
+```
+
+When changing the models, generate and apply a migration:
+
+```bash
+flask --app loveapp.app db migrate -m "describe the schema change"
+flask --app loveapp.app db upgrade
+```
+
+Review generated migration files before applying or committing them.
+
+## Optional Gmail notifications
+
+To send email notifications, configure a Gmail API OAuth client and set these
+environment variables in the environment that starts Flask:
+
+| Variable | Purpose |
+| --- | --- |
+| `GMAIL_CREDS_PATH` | Path to the Google OAuth client credentials JSON file |
+| `GMAIL_TOKEN_PATH` | Path where the authorized token JSON will be saved/read |
+| `GMAIL_SCOPES` | Gmail OAuth scopes, separated by semicolons |
+| `GMAIL_REDIRECT_URI` | Optional OAuth redirect URI; defaults to `http://localhost:8080/` |
+| `BASE_URL` | Public base URL used to build links in notification messages |
+
+For example, the send-mail scope is
+`https://www.googleapis.com/auth/gmail.send`. Register the redirect URI in the
+Google Cloud OAuth client configuration. With the variables set, authorize
+the account from the repository root:
+
+```bash
+flask --app loveapp.app authorize-gmail
+```
+
+The command prints an authorization URL. Open it in a browser, approve access,
+then paste the complete redirected URL when prompted. The redirect page itself
+does not need to load successfully; the command reads the authorization code
+from its URL.
+
+Email notifications are recorded even when Gmail delivery is not configured;
+in that case the app logs that it would have sent the message. Each account
+can enable or disable email and text notifications in **Settings**. Text
+notifications currently only create a database record and log the message.
+
+For locally configured Gmail variables and `BASE_URL`, export them before
+starting Flask so they are present when the notification modules load.
+
+## Deployment files
+
+The `deploy/` directory contains examples for the current Linux deployment:
+
+- `loveapp.service` runs Gunicorn on `127.0.0.1:8000` with one worker and four
+  threads.
+- `loveapp.nginx.conf` proxies HTTP traffic to Gunicorn. HTTPS can be added
+  with Certbot as noted in the configuration.
+- `update.sh` pulls the latest code, installs requirements and Gunicorn, then
+  restarts the `loveapp` systemd service.
+
+These files assume the paths and service account shown in the files
+(`/srv/loveapp/...`, `deploy`) and the configured host name; adjust them for
+your server before installing. The update script expects a working Git
+checkout and `sudo` permission to restart the service.
