@@ -43,7 +43,7 @@ pyparsing==3.3.3
 python-dotenv==1.2.3
 requests==2.34.2
 requests-oauthlib==2.0.0
-SQLAlchemy==2.0.52
+SQLAlchemy==2.1.6
 typing-inspection==0.4.4
 typing_extensions==4.16.0
 tzlocal==5.4.4
